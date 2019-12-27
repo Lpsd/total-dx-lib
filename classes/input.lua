@@ -50,8 +50,8 @@ function DxInput:constructor(x, y, width, height, text)
 	addEventHandler("onClientGUIBlur", self.guiElement, self.fOnClientGUIBlur)
 	
 	self:addRenderFunction(self.updateTextOffsetIndex)
-	self:addRenderFunction(self.syncCaretIndex)	
-	self:addRenderFunction(self.updateVisibleText)	
+	self:addRenderFunction(self.syncCaretIndex)
+	self:addRenderFunction(self.updateVisibleText)
 end
 
 function DxInput:destroy()
@@ -106,22 +106,22 @@ function DxInput:getCaretIndexFromCursorPosition(cursorX, cursorY)
 	
 	local offsetIndex = self:getTextOffsetIndex()
 	
-	for i, character in ipairs(characters) do
-		if (i > offsetIndex) then
-			local characterWidth = dxGetTextWidth(character, 1, "default", false)
-			
-			if(offset == 0) then
-				if(cursorX < bounds.left) then
-					return 0
-				end
+	for i=offsetIndex+1, #characters do
+		local character = characters[i]
+		
+		local characterWidth = dxGetTextWidth(character, 1, "default", false)
+		
+		if(offset == 0) then
+			if(cursorX < bounds.left) then
+				return 0
 			end
-			
-			if(isMouseInPosition(bounds.left + offset, bounds.top, characterWidth, self.height)) then
-				return (i-1) >= 0 and (i-1) or 0
-			end
-			
-			offset = offset + characterWidth
 		end
+		
+		if(isMouseInPosition(bounds.left + offset, bounds.top, characterWidth, self.height)) then
+			return (i-1) >= 0 and (i-1) or 0
+		end
+		
+		offset = offset + characterWidth
 	end
 	
 	return #characters
@@ -170,14 +170,14 @@ function DxInput:getCaretPosition()
 	
 	local offsetIndex = self:getTextOffsetIndex()
 	
-	for i, character in ipairs(characters) do
-		if (i > offsetIndex) then
-			if i <= caretIndex then
-				local nextLength = dxGetTextWidth(str .. character, 1, "default", false)
-				
-				if(nextLength <= inputWidth) then
-					str = str .. character
-				end
+	for i=offsetIndex+1, #characters do
+		local character = characters[i]
+		
+		if i <= caretIndex then
+			local nextLength = dxGetTextWidth(str .. character, 1, "default", false)
+			
+			if(nextLength <= inputWidth) then
+				str = str .. character
 			end
 		end
 	end
@@ -214,19 +214,22 @@ function DxInput:updateVisibleText()
 		local lastCaretIndex
 		local offsetIndex = self:getTextOffsetIndex()
 		
-		for i, character in ipairs(characters) do
-			if(i > offsetIndex) then
-				local characterWidth = dxGetTextWidth(character, 1, "default", false)
-				if (visibleWidth + characterWidth <= inputWidth) then
-					visibleText = visibleText .. character
-					visibleWidth = visibleWidth + characterWidth
-					lastCaretIndex = (i - offsetIndex)
-				end
+		for i=offsetIndex+1, #characters do
+			local character = characters[i]
+			
+			local characterWidth = dxGetTextWidth(character, 1, "default", false)
+			
+			if (visibleWidth + characterWidth <= inputWidth) then
+				visibleText = visibleText .. character
+				visibleWidth = visibleWidth + characterWidth
+				lastCaretIndex = (i - offsetIndex)
+			else
+				break
 			end
 		end	
 		
 		self:setVisibleText(visibleText)
-		self:setMaxCaretIndex(lastCaretIndex)
+		self:setMaxCaretIndex(#visibleText)
 	else
 		self:setVisibleText(self:getText())
 		self:setMaxCaretIndex(#characters)
@@ -245,8 +248,6 @@ function DxInput:updateTextOffsetIndex()
 	if(relativeCaretIndex > self:getMaxCaretIndex()) then
 		self.text.offsetIndex = self.text.offsetIndex + 1
 	end
-	
-	iprint("normal", self:getCaretIndex(), "relative", relativeCaretIndex, "max", self:getMaxCaretIndex(), "offset", self.text.offsetIndex, getTickCount())
 end
 
 -- **************************************************************************
