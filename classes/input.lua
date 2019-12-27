@@ -50,8 +50,8 @@ function DxInput:constructor(x, y, width, height, text)
 	addEventHandler("onClientGUIBlur", self.guiElement, self.fOnClientGUIBlur)
 	
 	self:addRenderFunction(self.updateTextOffsetIndex)
-	self:addRenderFunction(self.updateVisibleText)
 	self:addRenderFunction(self.syncCaretIndex)	
+	self:addRenderFunction(self.updateVisibleText)	
 end
 
 function DxInput:destroy()
@@ -138,8 +138,14 @@ function DxInput:getCaretIndex()
 end
 
 function DxInput:setCaretIndex(index)
+	if(index == self.caretIndex) then
+		return false
+	end
+	
 	self.caretIndex = index
-	return guiSetProperty(self.guiElement, "CaratIndex", index)
+	guiSetProperty(self.guiElement, "CaratIndex", index)
+	
+	return true
 end
 
 -- **************************************************************************
@@ -230,7 +236,7 @@ end
 -- **************************************************************************
 
 function DxInput:updateTextOffsetIndex()
-	local relativeCaretIndex = self:getCaretIndex() - self.text.offsetIndex
+	local relativeCaretIndex = self:getRelativeCaretIndex()
 	
 	if(relativeCaretIndex < 0) then
 		self.text.offsetIndex = self.text.offsetIndex - 1
@@ -239,6 +245,8 @@ function DxInput:updateTextOffsetIndex()
 	if(relativeCaretIndex > self:getMaxCaretIndex()) then
 		self.text.offsetIndex = self.text.offsetIndex + 1
 	end
+	
+	iprint("relative", relativeCaretIndex, "max", self:getMaxCaretIndex(), "offset", self.text.offsetIndex, getTickCount())
 end
 
 -- **************************************************************************
@@ -253,6 +261,10 @@ function DxInput:getVisibleText()
 end
 
 -- **************************************************************************
+
+function DxInput:getRelativeCaretIndex()
+	return self:getCaretIndex() - self.text.offsetIndex
+end
 
 function DxInput:getTextOffsetIndex()
 	return self.text.offsetIndex
