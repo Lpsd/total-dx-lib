@@ -73,7 +73,7 @@ function DxInput:dx(x, y)
 	if(self.focused) then
 		if(self:getCaretIndex()) then
 			local caretX = self:getCaretPosition()
-			dxDrawRectangle(text.left + caretX, y+(self.height*0.25/2), 2, self.height*0.75, tocolor(0,0,0,150))
+			dxDrawRectangle(text.left + caretX, y+(self.height*0.25/2), 2, self.height*0.75, tocolor(0,0,0,25))
 		end
 	end
 end
@@ -246,7 +246,7 @@ function DxInput:updateTextOffsetIndex()
 		self.text.offsetIndex = self.text.offsetIndex + 1
 	end
 	
-	iprint("relative", relativeCaretIndex, "max", self:getMaxCaretIndex(), "offset", self.text.offsetIndex, getTickCount())
+	iprint("normal", self:getCaretIndex(), "relative", relativeCaretIndex, "max", self:getMaxCaretIndex(), "offset", self.text.offsetIndex, getTickCount())
 end
 
 -- **************************************************************************
