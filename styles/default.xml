@@ -1,0 +1,23 @@
+<elements>
+
+	<general>
+		<style name="primary_color" r=33 g=33 b=33 a=255 />
+		<style name="hover_color" r=33 g=33 b=33 a=225 />
+		<style name="text_color" r=255 g=255 b=255 a=255 />
+	</general>
+	
+	<window>
+		<style name="titlebar_color" r=36 g=36 b=36 a=255 />
+		<style name="close_button_bg_color" r=250 g=55 b=55 a=255 />
+	</window>
+	
+	<text>
+		<style name="primary_color" r=255 g=255 b=255 a=0 />
+	</text>
+	
+	<input>
+		<style name="primary_color" r=255 g=255 b=255 a=255 />
+		<style name="text_color" r=10 g=10 b=10 a=255 />
+	</input>
+	
+</elements>

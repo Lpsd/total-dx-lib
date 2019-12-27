@@ -1,0 +1,26 @@
+<meta>
+	<info name="Total DX Library" author="LopSided" version="1.0.0" />
+	<min_mta_version client="1.5.7-9.20288.0" server="1.5.7-9.20164.0" />
+	<oop>true</oop>
+	
+	<script src="classlib.lua" type="client" />
+	
+	<script src="init.lua" type="client" />
+	
+	<!-- General -->
+	<script src="utils.lua" type="client" />
+	<script src="style.lua" type="client" />
+	
+	<!-- Element Classes -->
+	<script src="classes/element.lua" type="client" />	
+	<script src="classes/blank.lua" type="client" />	
+	<script src="classes/text.lua" type="client" />	
+	<script src="classes/window.lua" type="client" />
+	<script src="classes/input.lua" type="client" />
+
+	<!-- Style Definitions -->
+	<file src="styles.xml" />
+	
+	<!-- Put your styles here -->
+	<file src="styles/default.xml" />
+</meta>
