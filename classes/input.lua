@@ -148,13 +148,28 @@ function DxInput:onClientKey(button, press)
 	end
 	
 	if(self.focused) then
-		if (string.match(button, "arrow")) then
+		if(string.match(button, "arrow")) then
 			--Reset selection
 			self.selection.length = 0
 		end
+		
+		if(button == "a") then
+			if(getKeyState("lctrl") or getKeyState("rctrl")) then
+				--Set all text visible text selected (in reality, all the text will be selected in the CEGUI input host)
+				self:setCaretIndex(self:getFirstVisibleCharacterIndex())
+				
+				self.selection.index.start = self:getFirstVisibleCharacterIndex()
+				self.selection.index.finish = self:getLastVisibleCharacterIndex()
+				
+				self.selection.length = self:getTextSelectionLength()
+				
+				local selectionX, selectionWidth = self:getTextSelectionBounds()
+				
+				self.selection.bounds.x = selectionX
+				self.selection.bounds.width = selectionWidth
+			end
+		end
 	end
-	
-	
 end
 
 -- **************************************************************************
@@ -447,6 +462,12 @@ end
 
 function DxInput:onClientGUIChanged()
 	self.text.text = guiGetText(self.guiElement)
+	
+	-- Stops a frame of desync on the caret
+	self:syncCaretIndex()
+	
+	-- Prevent glitch with max caret index when selecting all text and deleting
+	self:updateVisibleText()
 	
 	--Reset selection
 	self.selection.length = 0
