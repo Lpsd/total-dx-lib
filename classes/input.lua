@@ -18,10 +18,23 @@ function DxInput:constructor(x, y, width, height, text)
 		}
 	}
 	
+	self.selection = {
+		dragging = false,
+		length = 0,
+		index = {
+			start = 0,
+			finish = 0
+		},
+		bounds = {
+			x = 0,
+			width = 0
+		}
+	}
+	
 	self:updateVisibleText()
 	
-	self.guiElement = guiCreateEdit(0, 0, width, height, text, false)
-	-- guiSetAlpha(self.guiElement, 0)
+	self.guiElement = guiCreateEdit(-width, -height, width, height, text, false)
+	guiSetVisible(self.guiElement, false)
 	
 	local primaryColor = getStyleSetting("input", "primary_color")
 	self:setColor(primaryColor.a, primaryColor.g, primaryColor.b, primaryColor.a)
@@ -49,9 +62,13 @@ function DxInput:constructor(x, y, width, height, text)
 	self.fOnClientGUIBlur = bind(self.onClientGUIBlur, self)
 	addEventHandler("onClientGUIBlur", self.guiElement, self.fOnClientGUIBlur)
 	
+	self.fOnClientClick = bind(self.onClientClick, self)
+	addEventHandler("onClientClick", root, self.fOnClientClick)
+	
 	self:addRenderFunction(self.updateTextOffsetIndex)
 	self:addRenderFunction(self.syncCaretIndex)
 	self:addRenderFunction(self.updateVisibleText)
+	self:addRenderFunction(self.processTextSelection)
 end
 
 function DxInput:destroy()
@@ -76,6 +93,101 @@ function DxInput:dx(x, y)
 			dxDrawRectangle(text.left + caretX, y+(self.height*0.25/2), 2, self.height*0.75, tocolor(0,0,0,25))
 		end
 	end
+	
+	--Draw text selection overlay
+	if(self.selection.length > 0) then
+		dxDrawRectangle(text.left + self.selection.bounds.x, y+(self.height*0.25/2), self.selection.bounds.width, self.height*0.75, tocolor(0,0,75,50))
+	end
+end
+
+-- **************************************************************************
+
+function DxInput:onClientClick(button, state, x, y)
+	if(button ~= "left") then
+		return
+	end
+	
+	if(state == "down") then
+		if(isMouseInPosition(self.x, self.y, self.width, self.height)) then
+			self.selection.index.start = self:getCaretIndexFromCursorPosition(x, y)
+			self.selection.dragging = true
+		end
+	else
+		if(self.selection.dragging) then		
+			if(self.selection.index.finish > self.selection.index.start) then
+				self:setCaretIndex(self.selection.index.start)
+			else
+				self:setCaretIndex(self.selection.index.finish)
+			end
+			
+			guiSetProperty(self.guiElement, "SelectionLength", self.selection.length)
+			
+			self.selection.dragging = false
+		end
+	end
+end
+
+-- **************************************************************************
+
+function DxInput:processTextSelection()
+	if(self.selection.dragging) then
+		local sx, sy = guiGetScreenSize()
+		local cx, cy = getCursorPosition()
+		
+		local cursorX, cursorY = ( cx * sx ), ( cy * sy )
+		
+		self.selection.index.finish = self:getCaretIndexFromCursorPosition(cursorX, cursorY)
+		
+		self.selection.length = self:getTextSelectionLength()
+		
+		local selectionX, selectionWidth = self:getTextSelectionBounds()
+		
+		self.selection.bounds.x = selectionX
+		self.selection.bounds.width = selectionWidth		
+	end
+end
+
+-- **************************************************************************
+
+function DxInput:getTextSelectionLength()
+	return math.abs(self.selection.index.start - self.selection.index.finish)
+end
+
+-- **************************************************************************
+
+-- x, width
+function DxInput:getTextSelectionBounds()	
+	local characters = {}
+	self:getText():gsub(".", function(c)
+		table.insert(characters, c)
+	end)
+	
+	local offsetIndex = self:getTextOffsetIndex()
+	
+	local start, finish = self.selection.index.start, self.selection.index.finish
+	
+	if(self.selection.index.start > self.selection.index.finish) then
+		start, finish = self.selection.index.finish, self.selection.index.start
+	end
+	
+	local selectionX = 0
+	local selectionWidth = 0
+	
+	for i=offsetIndex+1, self:getLastVisibleCharacterIndex() do
+		local character = characters[i]
+		
+		local characterWidth = dxGetTextWidth(character, 1, "default", false)
+		
+		if(i <= start) then
+			selectionX = selectionX + characterWidth
+		end
+		
+		if(i > start) and (i <= finish) then
+			selectionWidth = selectionWidth + characterWidth
+		end
+	end
+	
+	return selectionX, selectionWidth
 end
 
 -- **************************************************************************
@@ -106,25 +218,25 @@ function DxInput:getCaretIndexFromCursorPosition(cursorX, cursorY)
 	
 	local offsetIndex = self:getTextOffsetIndex()
 	
-	for i=offsetIndex+1, #characters do
+	for i=offsetIndex+1, self:getLastVisibleCharacterIndex() do
 		local character = characters[i]
 		
 		local characterWidth = dxGetTextWidth(character, 1, "default", false)
 		
 		if(offset == 0) then
 			if(cursorX < bounds.left) then
-				return 0
+				return self:getFirstVisibleCharacterIndex()
 			end
 		end
 		
-		if(isMouseInPosition(bounds.left + offset, bounds.top, characterWidth, self.height)) then
-			return (i-1) >= 0 and (i-1) or 0
+		if(isMouseInPosition(bounds.left + offset, 0, characterWidth, SCREEN_HEIGHT)) then
+			return (i) >= self:getFirstVisibleCharacterIndex() and (i) or self:getFirstVisibleCharacterIndex()
 		end
 		
 		offset = offset + characterWidth
 	end
 	
-	return #characters
+	return self:getLastVisibleCharacterIndex()
 end
 
 function DxInput:setCaretIndexOnClick(cursorX, cursorY)
@@ -209,31 +321,26 @@ function DxInput:updateVisibleText()
 	self:getText():gsub(".", function(c)
 		table.insert(characters, c)
 	end)	
+
+	local lastCaretIndex
+	local offsetIndex = self:getTextOffsetIndex()
 	
-	if (textWidth > inputWidth) then		
-		local lastCaretIndex
-		local offsetIndex = self:getTextOffsetIndex()
+	for i=offsetIndex+1, #characters do
+		local character = characters[i]
 		
-		for i=offsetIndex+1, #characters do
-			local character = characters[i]
-			
-			local characterWidth = dxGetTextWidth(character, 1, "default", false)
-			
-			if (visibleWidth + characterWidth <= inputWidth) then
-				visibleText = visibleText .. character
-				visibleWidth = visibleWidth + characterWidth
-				lastCaretIndex = (i - offsetIndex)
-			else
-				break
-			end
-		end	
+		local characterWidth = dxGetTextWidth(character, 1, "default", false)
 		
-		self:setVisibleText(visibleText)
-		self:setMaxCaretIndex(#visibleText)
-	else
-		self:setVisibleText(self:getText())
-		self:setMaxCaretIndex(#characters)
-	end
+		if (visibleWidth + characterWidth <= inputWidth) then
+			visibleText = visibleText .. character
+			visibleWidth = visibleWidth + characterWidth
+			lastCaretIndex = (i - offsetIndex)
+		else
+			break
+		end
+	end	
+	
+	self:setVisibleText(visibleText)
+	self:setMaxCaretIndex(#visibleText)
 end
 
 -- **************************************************************************
@@ -284,6 +391,16 @@ end
 
 -- **************************************************************************
 
+function DxInput:getFirstVisibleCharacterIndex()
+	return self:getLastVisibleCharacterIndex() - self:getMaxCaretIndex()
+end
+
+function DxInput:getLastVisibleCharacterIndex()
+	return self:getTextOffsetIndex() + self:getMaxCaretIndex()
+end
+
+-- **************************************************************************
+
 function DxInput:getInputWidth()
 	local bounds = self:getTextBounds()
 	return (bounds.right - bounds.left)
@@ -299,6 +416,9 @@ end
 
 function DxInput:onClientGUIChanged()
 	self.text.text = guiGetText(self.guiElement)
+	
+	--Reset selection
+	self.selection.length = 0
 end
 
 -- **************************************************************************

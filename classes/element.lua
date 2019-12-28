@@ -40,13 +40,18 @@ end
 function DxElement:virtual_constructor(x, y, width, height)
 	self.baseX, self.baseY = x, y
 	self.previousBaseX, self.previousBaseY = x, y
+	
 	self.x, self.y = x, y
 	self.previousX, self.previousY = x, y
+	
 	self.width, self.height = width, height
 	self.previousWidth, self.previousHeight = width, height
+	
 	self.index = #DxElements+1
+	
 	self.alpha = 255
 	self.visible = true
+	
 	self.type = "dx-element"
 	
 	self.centered = false
@@ -131,9 +136,12 @@ function DxElement:virtual_constructor(x, y, width, height)
 	addEventHandler("onClientCursorMove", root, self.eOnCursorMove)
 
 	self:addRenderFunction(self.draw)
+	
 	self:addRenderFunction(self.updateCanvasBounds, true)
 	self:addRenderFunction(self.drawCanvas)
+	
 	self:addRenderFunction(self.drag, true)
+	
 	self:addRenderFunction(self.updateInheritedBounds)
 	self:addRenderFunction(self.forceInBounds, true)
 	
@@ -163,7 +171,6 @@ function DxElement:draw(allow, parent)
 	else
 		if(not self:inCanvas()) then
 			self:generateCanvas()
-			self:drawCanvas()
 		end
 	end
 end
