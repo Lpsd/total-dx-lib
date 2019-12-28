@@ -3,8 +3,6 @@ DxInput = inherit(DxElement)
 function DxInput:constructor(x, y, width, height, text)
 	self.type = "dx-input"
 	
-	self.caretIndex = 0
-	
 	self.text = {
 		text = text,
 		visibleText = text,
@@ -30,6 +28,17 @@ function DxInput:constructor(x, y, width, height, text)
 			width = 0
 		}
 	}
+	
+	self.caret = {
+		state = true,
+		index = 0,
+		blink = {
+			start = 0
+		}
+	}
+		
+	self:addProperty("caret_blinking", true)
+	self:addProperty("caret_blink_duration", 500) --milliseconds
 	
 	self:updateVisibleText()
 	
@@ -73,6 +82,7 @@ function DxInput:constructor(x, y, width, height, text)
 	self:addRenderFunction(self.syncCaretIndex)
 	self:addRenderFunction(self.updateVisibleText)
 	self:addRenderFunction(self.processTextSelection)
+	self:addRenderFunction(self.processCaretBlinking)
 end
 
 function DxInput:destroy()
@@ -101,9 +111,11 @@ function DxInput:dx(x, y)
 	
 	--Draw caret
 	if(self.focused) then
-		if(self:getCaretIndex()) then
-			local caretX = self:getCaretPosition()
-			dxDrawRectangle(text.left + caretX, y+(self.height*0.25/2), 2, self.height*0.75, tocolor(0,0,0,25))
+		if(self.caret.state) then
+			if(self:getCaretIndex()) then
+				local caretX = self:getCaretPosition()
+				dxDrawRectangle(text.left + caretX, y+(self.height*0.25/2), 2, self.height*0.75, tocolor(0,0,0,25))
+			end
 		end
 	end
 	
@@ -291,15 +303,15 @@ end
 -- **************************************************************************
 
 function DxInput:getCaretIndex()
-	return self.caretIndex
+	return self.caret.index
 end
 
 function DxInput:setCaretIndex(index)
-	if(index == self.caretIndex) then
+	if(index == self.caret.index) then
 		return false
 	end
 	
-	self.caretIndex = index
+	self.caret.index = index
 	guiSetProperty(self.guiElement, "CaratIndex", index)
 	
 	return true
@@ -350,6 +362,35 @@ end
 function DxInput:syncCaretIndex()
 	local caretIndex = tonumber(guiGetProperty(self.guiElement, "CaratIndex"))
 	return self:setCaretIndex(caretIndex)
+end
+
+-- **************************************************************************
+
+function DxInput:setCaretBlinkingEnabled(state)
+	return self:setProperty("caret_blinking", state)
+end
+
+function DxInput:setCaretBlinkingDuration(duration)
+	return self:setProperty("caret_blink_duration", duration)
+end
+
+-- **************************************************************************
+
+function DxInput:processCaretBlinking()
+	if(not self:getProperty("caret_blinking")) then
+		return false
+	end
+	
+	local duration = self:getProperty("caret_blink_duration")
+	
+	if(self.caret.blink.start == 0) then
+		self.caret.blink.start = getTickCount()
+	end
+	
+	if(self.caret.blink.start + duration <= getTickCount()) then
+		self.caret.state = not self.caret.state
+		self.caret.blink.start = getTickCount()
+	end
 end
 
 -- **************************************************************************

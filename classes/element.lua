@@ -766,6 +766,28 @@ end
 
 -- **************************************************************************
 
+function DxElement:addProperty(property, value)
+	if(self.properties[property] ~= nil) then
+		return false
+	end
+	
+	self.properties[property] = value
+	
+	return true
+end
+
+function DxElement:removeProperty(property)
+	if(self.properties[property] == nil) then
+		return false
+	end
+	
+	self.properties[property] = nil
+	
+	return true
+end
+
+-- **************************************************************************
+
 function DxElement:setProperty(property, value)
 	if(self.properties[property] == nil) then
 		return false
