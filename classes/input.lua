@@ -49,6 +49,7 @@ function DxInput:constructor(x, y, width, height, text)
 	}
 	
 	self.setGUIElementFocused = function()
+		guiSetInputMode("no_binds")
 		self.focused = guiFocus(self.guiElement)
 		self.focused = true
 	end
@@ -75,8 +76,17 @@ function DxInput:constructor(x, y, width, height, text)
 end
 
 function DxInput:destroy()
+	if(isElement(self.guiElement)) then
+		destroyElement(self.guiElement)
+	end
+	
+	--Just incase we were editing when the input box was destroyed
+	guiSetInputMode("allow_binds")
+	
 	removeEventHandler("onClientGUIChanged", root, self.fOnClientCharacter)
 	removeEventHandler("onClientGUIBlur", self.guiElement, self.fOnClientGUIBlur)
+	removeEventHandler("onClientClick", root, self.fOnClientClick)
+	removeEventHandler("onClientKey", root, self.fOnClientKey)
 end
 
 -- **************************************************************************
@@ -430,6 +440,7 @@ end
 
 function DxInput:onClientGUIBlur()
 	self.focused = false
+	guiSetInputMode("allow_binds")
 end
 
 -- **************************************************************************

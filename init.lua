@@ -14,9 +14,9 @@ function init()
 	
 	--Debug testing
 	if(DEBUG) then
-		window = DxWindow:new(300, 300, 300, 300, "Primary")
+		window = DxWindow:new(300, 300, 300, 300, "Primary Window")
 		
-		input = DxInput:new(50, 50, 200, 35, "hello i wonder what happens when i put a big text in here")
+		input = DxInput:new(50, 50, 200, 35, "Lorem Ipsum is simply dummy text of the printing and typesetting industry.")
 		
 		input:setParent(window)
 	end
