@@ -65,6 +65,9 @@ function DxInput:constructor(x, y, width, height, text)
 	self.fOnClientClick = bind(self.onClientClick, self)
 	addEventHandler("onClientClick", root, self.fOnClientClick)
 	
+	self.fOnClientKey = bind(self.onClientKey, self)
+	addEventHandler("onClientKey", root, self.fOnClientKey)
+	
 	self:addRenderFunction(self.updateTextOffsetIndex)
 	self:addRenderFunction(self.syncCaretIndex)
 	self:addRenderFunction(self.updateVisibleText)
@@ -125,6 +128,23 @@ function DxInput:onClientClick(button, state, x, y)
 			self.selection.dragging = false
 		end
 	end
+end
+
+-- **************************************************************************
+
+function DxInput:onClientKey(button, press)
+	if not press then
+		return
+	end
+	
+	if(self.focused) then
+		if (string.match(button, "arrow")) then
+			--Reset selection
+			self.selection.length = 0
+		end
+	end
+	
+	
 end
 
 -- **************************************************************************
