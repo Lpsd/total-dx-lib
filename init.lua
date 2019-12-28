@@ -17,8 +17,10 @@ function init()
 		window = DxWindow:new(300, 300, 300, 300, "Primary Window")
 		
 		input = DxInput:new(50, 50, 200, 35, "Lorem Ipsum is simply dummy text of the printing and typesetting industry.")
-		
 		input:setParent(window)
+		
+		image = DxImage:new(100, 100, 50, 50, "assets/images/64x64.png")
+		image:setParent(window)
 	end
 end
 addEventHandler("onClientResourceStart", resourceRoot, init)
