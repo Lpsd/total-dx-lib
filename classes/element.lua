@@ -36,6 +36,11 @@ end
 -- *************************************************
 
 function PrivateMethods:draw(allow, parent)
+	-- Hacky solution for bypassing 1/2 frames of delay when initializing an element (relating to onClient(pre)Render and private methods)
+	if(getTickCount() < (self.initTime + 10)) then
+		return
+	end
+	
 	local isRootElement = self:isRootElement()
 	
 	if(not self:hasCanvas()) then
@@ -449,7 +454,9 @@ function DxElement:virtual_constructor(x, y, width, height)
 		g = defaultTextColor.g,
 		b = defaultTextColor.b,
 		a = defaultTextColor.a
-	}	
+	}
+	
+	self.initTime = getTickCount()
 	
 	addEventHandler("onClientRender", root, getPrivateMethod(self, "render"))
 	addEventHandler("onClientPreRender", root, getPrivateMethod(self, "prerender"))	
@@ -466,6 +473,9 @@ function DxElement:virtual_constructor(x, y, width, height)
 	
 	self:addRenderFunction(getPrivateMethod(self, "updateInheritedBounds"))
 	self:addRenderFunction(getPrivateMethod(self, "forceInBounds"), true)
+	
+	callPrivateMethod(self, "updateInheritedBounds")
+	callPrivateMethod(self, "forceInBounds")
 	
 	DxElements[self.index] = self
 
