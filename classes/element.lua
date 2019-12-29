@@ -1,5 +1,333 @@
 DxElement = {}
 
+local PrivateMethods = {}
+local PrivateMethodCache = {}
+
+-- *************************************************
+
+local function getPrivateMethod(class, methodName)
+	local func = PrivateMethods[methodName]
+	
+	if(not func) then
+		return false
+	end	
+	
+	if(not PrivateMethodCache[class]) then
+		PrivateMethodCache[class] = {}
+	end
+	
+	if(not PrivateMethodCache[class][methodName]) then
+		PrivateMethodCache[class][methodName] = bind(func, class)
+	end
+
+	return PrivateMethodCache[class][methodName]
+end
+
+local function callPrivateMethod(class, methodName, ...)
+	local func = getPrivateMethod(class, methodName)
+	
+	if(not func) then
+		return false
+	end
+	
+	return func(...)
+end
+
+-- *************************************************
+
+function PrivateMethods:draw(allow, parent)
+	local isRootElement = self:isRootElement()
+	
+	if(not self:hasCanvas()) then
+		if(self:hasParent() and not allow) then
+			return false
+		end
+			
+		self:dx()
+			
+		for i=#self.children,1,-1 do
+			local child = self.children[i]
+			callPrivateMethod(child, "draw", true)
+		end
+	else
+		if(not self:inCanvas()) then
+			callPrivateMethod(self, "generateCanvas")
+		end
+	end
+end
+
+function PrivateMethods:drawCanvas()
+	if(self:hasCanvas()) then
+		if(self:isRootElement()) then
+			dxDrawImage(self.x, self.y, self.canvas.width, self.canvas.height, self:getCanvas())
+		end
+	end
+end
+
+
+function PrivateMethods:render()
+	for i, func in ipairs(self.renderFunctions.normal) do
+		func() 
+	end
+	
+	self.previousX, self.previousY = self.x, self.y
+	self.previousBaseX, self.previousBaseY = self.baseX, self.baseY
+	self.previousWidth, self.previousHeight = self.width, self.height
+end
+
+function PrivateMethods:prerender()
+	for i, func in ipairs(self.renderFunctions.prerender) do
+		func() 
+	end
+	
+	if(self:hasParent()) then
+		self.x, self.y = self.baseX + self.parent.x, self.baseY + self.parent.y
+	end
+end
+
+function PrivateMethods:drag()
+	if(self.dragging) then
+		local cx, cy = getCursorPosition()
+
+		cx = cx * SCREEN_WIDTH
+		cy = cy * SCREEN_HEIGHT
+		
+		if(not self.dragInitialX) then
+			self.dragInitialX, self.dragInitialY = cx - self.x, cy - self.y
+		end
+		
+		if(self:hasParent()) then
+			self.baseX, self.baseY = self.baseX + (cx - self.dragInitialX) - self.x, self.baseY + (cy - self.dragInitialY) - self.y
+			
+			local rootElement = self.parent:getRootElement()
+			local baseOffsetX, baseOffsetY = self.baseX, self.baseY
+			local minX, minY, maxX, maxY = self.bounds.min.x, self.bounds.min.y, self.bounds.max.x, self.bounds.max.y
+			
+			for i,e in ipairs(self:getInheritedParents()) do
+				if(e ~= rootElement) then
+					baseOffsetX, baseOffsetY = baseOffsetX + e.baseX, baseOffsetY + e.baseY
+				end
+			end
+			
+			if((rootElement.x + baseOffsetX + maxX) > SCREEN_WIDTH) then
+				self.baseX = SCREEN_WIDTH - rootElement.x - maxX - (baseOffsetX-self.baseX)
+			end
+			
+			if((rootElement.y + baseOffsetY + maxY) > SCREEN_HEIGHT) then
+				self.baseY = SCREEN_HEIGHT - rootElement.y - maxY - (baseOffsetY-self.baseY)
+			end		
+			
+			if((self.baseX + minX) < -(self.parent and self.parent.x or 0)) then
+				self.baseX = -(self.parent and self.parent.x or 0) - minX  
+			end
+			
+			if((self.baseY + minY) < -(self.parent and self.parent.y or 0)) then
+				self.baseY = -(self.parent and self.parent.y or 0) - minY 
+			end
+		else
+			self.x, self.y = cx - self.dragInitialX, cy - self.dragInitialY
+		end
+	end
+end
+
+function PrivateMethods:click(button, state, x, y)
+	if(button == "left") and (state == "up") then	
+		if(DxInfo.draggingElement == self) then
+			DxInfo.draggingElement = false
+		end
+		self.dragging = false
+		self.dragInitialX, self.dragInitialY = false, false
+	end
+	
+	if(button == "left") and (state == "down") then
+		if(not DxInfo.draggingElement) then
+			if(self:isMouseOverElement()) then
+				for i,element in ipairs(self.children) do
+					if(element:isMouseOverElement()) then
+						return callPrivateMethod(element, "click", "left", "down", x, y)
+					end
+				end
+				
+				if(not self:isObstructed(x, y)) then	
+					if(self:hasParent()) then
+						if(self.parent:getProperty("child_dragging")) then
+							if(self:getProperty("allow_drag")) then
+								if(isMouseInPosition(self.x + self.dragArea.x, self.y + self.dragArea.y, self.dragArea.width, self.dragArea.height)) then
+									self:bringToFront()
+									self.dragging = true
+									DxInfo.draggingElement = self
+								end		
+							end
+						end
+					else
+						if(self:getProperty("allow_drag")) then
+							if(isMouseInPosition(self.x + self.dragArea.x, self.y + self.dragArea.y, self.dragArea.width, self.dragArea.height)) then
+								self:bringToFront()
+								self.dragging = true
+								DxInfo.draggingElement = self
+							end	
+						end
+					end		
+					
+					for i, func in ipairs(self.clickFunctions) do
+						func(x, y)
+					end
+				end
+			end
+		end
+	end	
+end
+
+function PrivateMethods:updateInheritedBounds()
+	local minX, minY, maxX, maxY = self:getInheritedBounds()
+	self.bounds = {
+		min = {
+			x = minX,
+			y = minY
+		},
+		max = {
+			x = maxX,
+			y = maxY
+		}
+	}
+	return true
+end
+
+function PrivateMethods:forceInBounds()
+	if(not self:getProperty("force_in_bounds")) then
+		return false
+	end
+	
+	local targetArea = {
+		x = 0,
+		y = 0,
+		width = SCREEN_WIDTH,
+		height = SCREEN_HEIGHT
+	}
+	
+	if(self:hasParent()) then
+		if(self:getProperty("drag_preview")) then
+			if(self.dragging) then
+				return false
+			end
+		end
+		
+		targetArea.width, targetArea.height = self.parent.width, self.parent.height
+		
+		if(self.parent.type == "dx-window") then
+			if(not self:getProperty("ignore_window_bounds")) then
+				targetArea.y = targetArea.y + self.parent.titlebar.height
+			end
+		end
+		
+		if(self.baseX + self.width) > (targetArea.width) then
+			self.baseX = (targetArea.width) - self.width
+		elseif(self.baseX) < targetArea.x then
+			self.baseX = targetArea.x
+		end
+		
+		if(self.baseY + self.height) > (targetArea.height) then
+			self.baseY = (targetArea.height) - self.height
+		elseif(self.baseY) < targetArea.y then
+			self.baseY = targetArea.y			
+		end
+	else
+		for i,e in ipairs(self:getInheritedChildren()) do
+			if(e.dragging) then
+				return false
+			end
+		end
+		
+		local minX, minY, maxX, maxY = self.bounds.min.x, self.bounds.min.y, self.bounds.max.x, self.bounds.max.y
+		
+		if(self.x + maxX) > (targetArea.x + targetArea.width) then
+			self.x = (targetArea.x + targetArea.width) - maxX
+		elseif(self.x + minX) < targetArea.x then
+			self.x = targetArea.y - minX		
+		end
+		
+		if(self.y + maxY) > (targetArea.y + targetArea.height) then
+			self.y = (targetArea.y + targetArea.height) - maxY
+		elseif(self.y + minY) < targetArea.y then
+			self.y = targetArea.y - minY			
+		end	
+	end
+end
+
+function PrivateMethods:cursorMove(relX, relY, absX, absY)
+	if(self:isMouseOverElement()) then
+		if(not self:isObstructed(absX, absY)) then
+			if(self.hover) then
+				self.color = self.hoverColor
+				self.hovering = true
+				return true
+			end
+		end
+	end
+	self.hovering = false
+	self.color = self.primaryColor
+end
+
+function PrivateMethods:generateCanvas()
+	if(not self:hasCanvas()) then
+		self:createCanvas()
+	end
+	
+	if(self:isSizeUpdated()) then
+		destroyElement(self.canvas.texture)
+		self.canvas.texture = dxCreateRenderTarget(self.width, self.height, true)
+		self.canvas.width, self.canvas.height = self.width, self.height
+	end	
+	
+	local clearRenderTarget = false
+	
+	for i, child in ipairs(self:getInheritedChildren()) do
+		if(child:isPositionUpdated()) or (child:isSizeUpdated()) then
+			clearRenderTarget = true
+		end
+	end
+	
+	dxSetRenderTarget(self:getCanvas(), clearRenderTarget)
+	
+	self:dx(0, 0)
+	
+	local children = self:getInheritedChildren()
+	
+	for i=#children,1,-1 do
+		local child = children[i]
+		local x, y = child.baseX, child.baseY
+		
+		if(child.parent ~= self) then
+			x, y = child:getInheritedBasePosition()
+		end
+		
+		child:dx(x, y)
+	end
+	
+	dxSetRenderTarget()
+end
+
+function PrivateMethods:refreshIndex()
+	local tbl = self:isRootElement() and DxElements or self.parent.children
+	for i, element in ipairs(tbl) do
+		if(self == element) then
+			self.index = i
+			return true
+		end
+	end
+	return false
+end
+
+
+function PrivateMethods:refreshEventHandlers()
+	removeEventHandler("onClientRender", root, getPrivateMethod(self, "render"))
+	addEventHandler("onClientRender", root, getPrivateMethod(self, "render"))
+	removeEventHandler("onClientPreRender", root, getPrivateMethod(self, "prerender"))
+	addEventHandler("onClientPreRender", root, getPrivateMethod(self, "prerender"))	
+end
+
+-- *************************************************
+
 function DxElement:new(...)
 	return new(self, ...)
 end
@@ -21,10 +349,10 @@ function DxElement:delete(...)
 		DxInfo.draggingElement = false
 	end
 	
-	removeEventHandler("onClientRender", root, self.eOnClientRender)
-	removeEventHandler("onClientPreRender", root, self.eOnClientPreRender)
-	removeEventHandler("onClientClick", root, self.eOnClick)
-	removeEventHandler("onClientCursorMove", root, self.eOnCursorMove)
+	removeEventHandler("onClientRender", root, getPrivateMethod(self, "render"))
+	removeEventHandler("onClientPreRender", root, getPrivateMethod(self, "prerender"))
+	removeEventHandler("onClientClick", root, getPrivateMethod(self, "click"))
+	removeEventHandler("onClientCursorMove", root, getPrivateMethod(self, "cursorMove"))
 	
 	for i, element in ipairs(DxElements) do
 		if(element == self) then
@@ -123,56 +451,27 @@ function DxElement:virtual_constructor(x, y, width, height)
 		a = defaultTextColor.a
 	}	
 	
-	self.eOnClientRender = bind(DxElement.render, self)
-	addEventHandler("onClientRender", root, self.eOnClientRender)
+	addEventHandler("onClientRender", root, getPrivateMethod(self, "render"))
+	addEventHandler("onClientPreRender", root, getPrivateMethod(self, "prerender"))	
 	
-	self.eOnClientPreRender = bind(DxElement.prerender, self)
-	addEventHandler("onClientPreRender", root, self.eOnClientPreRender)	
+	addEventHandler("onClientClick", root, getPrivateMethod(self, "click"))
 
-	self.eOnClick = bind(DxElement.click, self)
-	addEventHandler("onClientClick", root, self.eOnClick)
-	
-	self.eOnCursorMove = bind(DxElement.cursorMove, self)
-	addEventHandler("onClientCursorMove", root, self.eOnCursorMove)
+	addEventHandler("onClientCursorMove", root, getPrivateMethod(self, "cursorMove"))
 
-	self:addRenderFunction(self.draw)
+	self:addRenderFunction(getPrivateMethod(self, "draw"))
 	
-	self:addRenderFunction(self.updateCanvasBounds, true)
-	self:addRenderFunction(self.drawCanvas)
+	self:addRenderFunction(getPrivateMethod(self, "drawCanvas"))
 	
-	self:addRenderFunction(self.drag, true)
+	self:addRenderFunction(getPrivateMethod(self, "drag"), true)
 	
-	self:addRenderFunction(self.updateInheritedBounds)
-	self:addRenderFunction(self.forceInBounds, true)
+	self:addRenderFunction(getPrivateMethod(self, "updateInheritedBounds"))
+	self:addRenderFunction(getPrivateMethod(self, "forceInBounds"), true)
 	
 	DxElements[self.index] = self
 
 	self:bringToFront()
 	
 	return self
-end
-
--- **************************************************************************
-
-function DxElement:draw(allow, parent)
-	local isRootElement = self:isRootElement()
-	
-	if(not self:hasCanvas()) then
-		if(self:hasParent() and not allow) then
-			return false
-		end
-			
-		self:dx()
-			
-		for i=#self.children,1,-1 do
-			local child = self.children[i]
-			child:draw(true)
-		end
-	else
-		if(not self:inCanvas()) then
-			self:generateCanvas()
-		end
-	end
 end
 
 -- **************************************************************************
@@ -184,45 +483,6 @@ function DxElement:createCanvas()
 		self.canvas.width, self.canvas.height = self.width, self.height
 	end
 	return self.canvas.texture and true or false
-end
-
-function DxElement:generateCanvas()
-	if(not self:hasCanvas()) then
-		self:createCanvas()
-	end
-	
-	if(self:isSizeUpdated()) then
-		destroyElement(self.canvas.texture)
-		self.canvas.texture = dxCreateRenderTarget(self.width, self.height, true)
-		self.canvas.width, self.canvas.height = self.width, self.height
-	end	
-	
-	local clearRenderTarget = false
-	
-	for i, child in ipairs(self:getInheritedChildren()) do
-		if(child:isPositionUpdated()) or (child:isSizeUpdated()) then
-			clearRenderTarget = true
-		end
-	end
-	
-	dxSetRenderTarget(self:getCanvas(), clearRenderTarget)
-	
-	self:dx(0, 0)
-	
-	local children = self:getInheritedChildren()
-	
-	for i=#children,1,-1 do
-		local child = children[i]
-		local x, y = child.baseX, child.baseY
-		
-		if(child.parent ~= self) then
-			x, y = child:getInheritedBasePosition()
-		end
-		
-		child:dx(x, y)
-	end
-	
-	dxSetRenderTarget()
 end
 
 function DxElement:setCanvasState(state)
@@ -250,14 +510,6 @@ function DxElement:inCanvas(parent)
 	end
 	
 	return false
-end
-
-function DxElement:drawCanvas()
-	if(self:hasCanvas()) then
-		if(self:isRootElement()) then
-			dxDrawImage(self.x, self.y, self.canvas.width, self.canvas.height, self:getCanvas())
-		end
-	end
 end
 
 -- **************************************************************************
@@ -296,137 +548,6 @@ function DxElement:removeRenderFunction(func)
 		end	
 	end
 	return false
-end
-
-function DxElement:render()
-	for i, func in ipairs(self.renderFunctions.normal) do
-		func() 
-	end
-	
-	self.previousX, self.previousY = self.x, self.y
-	self.previousBaseX, self.previousBaseY = self.baseX, self.baseY
-	self.previousWidth, self.previousHeight = self.width, self.height
-end
-
-function DxElement:prerender()
-	for i, func in ipairs(self.renderFunctions.prerender) do
-		func() 
-	end
-	
-	if(self:hasParent()) then
-		self.x, self.y = self.baseX + self.parent.x, self.baseY + self.parent.y
-	end
-end
-
--- **************************************************************************
-
-function DxElement:cursorMove(relX, relY, absX, absY)
-	if(self:isMouseOverElement()) then
-		if(not self:isObstructed(absX, absY)) then
-			if(self.hover) then
-				self.color = self.hoverColor
-				self.hovering = true
-				return true
-			end
-		end
-	end
-	self.hovering = false
-	self.color = self.primaryColor
-end
-
--- **************************************************************************
-
-function DxElement:drag()
-	if(self.dragging) then
-		local cx, cy = getCursorPosition()
-
-		cx = cx * SCREEN_WIDTH
-		cy = cy * SCREEN_HEIGHT
-		
-		if(not self.dragInitialX) then
-			self.dragInitialX, self.dragInitialY = cx - self.x, cy - self.y
-		end
-		
-		if(self:hasParent()) then
-			self.baseX, self.baseY = self.baseX + (cx - self.dragInitialX) - self.x, self.baseY + (cy - self.dragInitialY) - self.y
-			
-			local rootElement = self.parent:getRootElement()
-			local baseOffsetX, baseOffsetY = self.baseX, self.baseY
-			local minX, minY, maxX, maxY = self.bounds.min.x, self.bounds.min.y, self.bounds.max.x, self.bounds.max.y
-			
-			for i,e in ipairs(self:getInheritedParents()) do
-				if(e ~= rootElement) then
-					baseOffsetX, baseOffsetY = baseOffsetX + e.baseX, baseOffsetY + e.baseY
-				end
-			end
-			
-			if((rootElement.x + baseOffsetX + maxX) > SCREEN_WIDTH) then
-				self.baseX = SCREEN_WIDTH - rootElement.x - maxX - (baseOffsetX-self.baseX)
-			end
-			
-			if((rootElement.y + baseOffsetY + maxY) > SCREEN_HEIGHT) then
-				self.baseY = SCREEN_HEIGHT - rootElement.y - maxY - (baseOffsetY-self.baseY)
-			end		
-			
-			if((self.baseX + minX) < -(self.parent and self.parent.x or 0)) then
-				self.baseX = -(self.parent and self.parent.x or 0) - minX  
-			end
-			
-			if((self.baseY + minY) < -(self.parent and self.parent.y or 0)) then
-				self.baseY = -(self.parent and self.parent.y or 0) - minY 
-			end
-		else
-			self.x, self.y = cx - self.dragInitialX, cy - self.dragInitialY
-		end
-	end
-end
-
-function DxElement:click(button, state, x, y)
-	if(button == "left") and (state == "up") then	
-		if(DxInfo.draggingElement == self) then
-			DxInfo.draggingElement = false
-		end
-		self.dragging = false
-		self.dragInitialX, self.dragInitialY = false, false
-	end
-	
-	if(button == "left") and (state == "down") then
-		if(not DxInfo.draggingElement) then
-			if(self:isMouseOverElement()) then
-				for i,element in ipairs(self.children) do
-					if(element:isMouseOverElement()) then
-						return element:click("left", "down", x, y)	
-					end
-				end
-				
-				if(not self:isObstructed(x, y)) then	
-					if(self:hasParent()) then
-						if(self.parent:getProperty("child_dragging")) then
-							if(self:getProperty("allow_drag")) then
-								if(isMouseInPosition(self.x + self.dragArea.x, self.y + self.dragArea.y, self.dragArea.width, self.dragArea.height)) then
-									self:bringToFront()
-									self.dragging = true
-									DxInfo.draggingElement = self
-								end		
-							end
-						end
-					else
-						if(self:getProperty("allow_drag")) then
-							if(isMouseInPosition(self.x + self.dragArea.x, self.y + self.dragArea.y, self.dragArea.width, self.dragArea.height)) then
-								self:bringToFront()
-								self.dragging = true
-								DxInfo.draggingElement = self
-							end	
-						end
-					end		
-					
-					for i, func in ipairs(self.clickFunctions) do
-						func(x, y)
-					end
-				end
-			end
-		end
-	end	
 end
 
 -- **************************************************************************
@@ -507,82 +628,6 @@ function DxElement:getObstructingElement(cursorX, cursorY, element)
 end
 
 -- **************************************************************************
-
-function DxElement:forceInBounds()
-	if(not self:getProperty("force_in_bounds")) then
-		return false
-	end
-	
-	local targetArea = {
-		x = 0,
-		y = 0,
-		width = SCREEN_WIDTH,
-		height = SCREEN_HEIGHT
-	}
-	
-	if(self:hasParent()) then
-		if(self:getProperty("drag_preview")) then
-			if(self.dragging) then
-				return false
-			end
-		end
-		
-		targetArea.width, targetArea.height = self.parent.width, self.parent.height
-		
-		if(self.parent.type == "dx-window") then
-			if(not self:getProperty("ignore_window_bounds")) then
-				targetArea.y = targetArea.y + self.parent.titlebar.height
-			end
-		end
-		
-		if(self.baseX + self.width) > (targetArea.width) then
-			self.baseX = (targetArea.width) - self.width
-		elseif(self.baseX) < targetArea.x then
-			self.baseX = targetArea.x
-		end
-		
-		if(self.baseY + self.height) > (targetArea.height) then
-			self.baseY = (targetArea.height) - self.height
-		elseif(self.baseY) < targetArea.y then
-			self.baseY = targetArea.y			
-		end
-	else
-		for i,e in ipairs(self:getInheritedChildren()) do
-			if(e.dragging) then
-				return false
-			end
-		end
-		
-		local minX, minY, maxX, maxY = self.bounds.min.x, self.bounds.min.y, self.bounds.max.x, self.bounds.max.y
-		
-		if(self.x + maxX) > (targetArea.x + targetArea.width) then
-			self.x = (targetArea.x + targetArea.width) - maxX
-		elseif(self.x + minX) < targetArea.x then
-			self.x = targetArea.y - minX		
-		end
-		
-		if(self.y + maxY) > (targetArea.y + targetArea.height) then
-			self.y = (targetArea.y + targetArea.height) - maxY
-		elseif(self.y + minY) < targetArea.y then
-			self.y = targetArea.y - minY			
-		end	
-	end
-end
-
-function DxElement:updateInheritedBounds()
-	local minX, minY, maxX, maxY = self:getInheritedBounds()
-	self.bounds = {
-		min = {
-			x = minX,
-			y = minY
-		},
-		max = {
-			x = maxX,
-			y = maxY
-		}
-	}
-	return true
-end
 
 function DxElement:getInheritedBounds()
 	local bounds = {
@@ -985,12 +1030,6 @@ end
 
 -- **************************************************************************
 
-function DxElement:refreshIndex()
-	self.index = self:getIndex()
-end
-
--- **************************************************************************
-
 function DxElement:isTerminated()
 	local rootElement = self:getRootElement()
 	
@@ -1021,7 +1060,7 @@ function DxElement:setIndex(index)
 	end
 	
 	--Update the current index, important.
-	self:refreshIndex()
+	callPrivateMethod(self, "refreshIndex")
 	
 	local currentIndex = self:getIndex()
 	
@@ -1030,12 +1069,12 @@ function DxElement:setIndex(index)
 	for i=#DxElements,1,-1 do
 		local element = DxElements[i]
 		if(element:isRootElement()) then
-			element:refreshIndex()
-			element:refreshEventHandlers()
+			callPrivateMethod(element, "refreshIndex")
+			callPrivateMethod(element, "refreshEventHandlers")
 			
 			for i, child in ipairs(element:getInheritedChildren()) do
-				child:refreshIndex()
-				child:refreshEventHandlers()
+				callPrivateMethod(child, "refreshIndex")
+				callPrivateMethod(child, "refreshEventHandlers")
 			end
 		end		
 	end	
@@ -1045,17 +1084,6 @@ end
 
 function DxElement:getIndex()
 	return self.index
-end
-
-function DxElement:refreshIndex()
-	local tbl = self:isRootElement() and DxElements or self.parent.children
-	for i, element in ipairs(tbl) do
-		if(self == element) then
-			self.index = i
-			return true
-		end
-	end
-	return false
 end
 
 -- **************************************************************************
@@ -1103,10 +1131,3 @@ function DxElement:isFront()
 end
 
 -- **************************************************************************
-
-function DxElement:refreshEventHandlers()
-	removeEventHandler("onClientRender", root, self.eOnClientRender)
-	addEventHandler("onClientRender", root, self.eOnClientRender)
-	removeEventHandler("onClientPreRender", root, self.eOnClientPreRender)
-	addEventHandler("onClientPreRender", root, self.eOnClientPreRender)	
-end
