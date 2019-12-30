@@ -35,11 +35,15 @@ end
 
 -- *************************************************
 
-function PrivateMethods:draw(allow, parent)	
+function PrivateMethods:draw(allow)
 	local isRootElement = self:isRootElement()
 	
 	if(not self:hasCanvas()) then
 		if(self:hasParent() and not allow) then
+			return false
+		end
+		
+		if(self:inCanvas()) then
 			return false
 		end
 			

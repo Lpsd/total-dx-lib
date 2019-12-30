@@ -18,7 +18,7 @@ end
 function createCircleMask(width, height, padding)
 	padding = padding or 5
 	
-	local texture = dxCreateTexture(width, height)
+	local texture = dxCreateTexture(width, height, "argb", "clamp")
 	
 	local pixels = dxGetTexturePixels(texture)
 	
