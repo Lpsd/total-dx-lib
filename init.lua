@@ -15,16 +15,18 @@ function init()
 	--Debug testing
 	if(DEBUG) then
 		window = DxWindow:new(300, 300, 300, 300, "Primary Window")
-		window2 = DxWindow:new(500, 500, 300, 300, "Primary Window")
 		
 		input = DxInput:new(50, 50, 200, 35, "Lorem Ipsum is simply dummy text of the printing and typesetting industry.")
 		input:setParent(window)
 		
-		image = DxImage:new(100, 100, 50, 50, "assets/images/64x64.png")
-		image:setParent(window)
+		button = DxButton:new(75, 100, 150, 35, "Button")
+		button:setParent(window)
 		
-		button = DxButton:new(75, 75, 150, 35, "Button")
-		button:setParent(window2)
+		local texture = window:getTexture()
+		local width, height = window:getSize()
+		
+		image = DxImage:new(SCREEN_WIDTH - width, 0, width, height, texture)
+		label = DxText:new(SCREEN_WIDTH - width, 0, width, height, "(texture)")
 	end
 end
 addEventHandler("onClientResourceStart", resourceRoot, init)

@@ -55,9 +55,11 @@ function PrivateMethods:draw(allow, parent)
 			callPrivateMethod(child, "draw", true)
 		end
 	else
-		if(not self:inCanvas()) then
-			self:dx()
-			callPrivateMethod(self, "generateCanvas")
+		if(isRootElement) then
+			if(not self:inCanvas()) then
+				self:dx()
+				callPrivateMethod(self, "generateCanvas")
+			end
 		end
 	end
 end
@@ -295,8 +297,6 @@ function PrivateMethods:generateCanvas()
 	
 	dxSetRenderTarget(self:getCanvas(), clearRenderTarget)
 	
-	-- self:dx(0, 0)
-	
 	local children = self:getInheritedChildren()
 	
 	for i=#children,1,-1 do
@@ -513,6 +513,31 @@ function DxElement:inCanvas(parent)
 	end
 	
 	return false
+end
+
+function DxElement:getTexture()
+	local canvas = dxCreateRenderTarget(self.width, self.height, true)
+	
+	dxSetRenderTarget(canvas)
+	
+	self:dx(0, 0)
+	
+	local children = self:getInheritedChildren()
+	
+	for i=#children,1,-1 do
+		local child = children[i]
+		local x, y = child.baseX, child.baseY
+		
+		if(child.parent ~= self) then
+			x, y = child:getInheritedBasePosition()
+		end
+		
+		child:dx(x, y)
+	end
+	
+	dxSetRenderTarget()
+	
+	return canvas
 end
 
 -- **************************************************************************
