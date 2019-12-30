@@ -22,11 +22,19 @@ function init()
 		local button = DxButton:new(75, 100, 150, 35, "Button")
 		button:setParent(window)
 		
-		local texture = window:getTexture()
-		local width, height = window:getSize()
+		local width, height = 150, 150
+		local image = DxImage:new(75, 200, width, height, "assets/images/boris.jpg")
 		
-		local image = DxImage:new(SCREEN_WIDTH - width, 0, width, height, texture)
-		local label = DxText:new(SCREEN_WIDTH - width, 0, 100, 35, "(texture)")
+		local mask = createCircleMask(width, height)
+		image:applyMask(mask)
+		
+		image:setParent(window)
+		
+		local width, height = window:getSize()
+		local texture = window:getTexture()
+		
+		local clone = DxImage:new(SCREEN_WIDTH - width, 0, width, height, texture)
+		local label = DxText:new(SCREEN_WIDTH - width, 0, width, height, "(texture)")
 	end
 end
 addEventHandler("onClientResourceStart", resourceRoot, init)

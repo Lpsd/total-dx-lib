@@ -14,3 +14,40 @@ end
 function decimalToRGBA(d)
 	return bitExtract(d, 0, 8), bitExtract(d, 8, 8), bitExtract(d, 16, 8), bitExtract(d, 24, 8)
 end
+
+function createCircleMask(width, height, padding)
+	padding = padding or 5
+	
+	local texture = dxCreateTexture(width, height)
+	
+	local pixels = dxGetTexturePixels(texture)
+	
+	for i=0, (width-1) do
+		for j=0, (height-1) do
+			dxSetPixelColor(pixels, j, i, 0, 0, 0, 255)
+		end
+	end
+	
+	local radius = (width / 2)
+	
+	if(height < width) then
+		radius = (height / 2)
+	end
+	
+	radius = radius - padding
+	
+	for r=radius, 1, -1 do
+		for i=0, 360, 0.1 do
+			local angle = i
+			
+			local x = (r * math.cos(angle * math.pi / 180)) + radius + padding
+			local y = (r * math.sin(angle * math.pi / 180)) + radius + padding
+			
+			dxSetPixelColor(pixels, x, y, 255, 255, 255, 255)
+		end
+	end
+	
+	dxSetTexturePixels(texture, pixels)	
+		
+	return texture	
+end

@@ -22,6 +22,9 @@
 	
 	<!-- Assets -->
 	<file src="assets/images/64x64.png" />
+	<file src="assets/images/boris.jpg" />
+	
+	<file src="assets/shaders/mask.fx" />
 
 	<!-- Style Definitions -->
 	<file src="styles.xml" />

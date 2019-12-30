@@ -48,7 +48,11 @@ function PrivateMethods:draw(allow, parent)
 			return false
 		end
 			
-		self:dx()
+		if(self:isMaskEnabled()) then
+			self:drawMask()
+		else
+			self:dx()
+		end
 			
 		for i=#self.children,1,-1 do
 			local child = self.children[i]
@@ -57,7 +61,11 @@ function PrivateMethods:draw(allow, parent)
 	else
 		if(isRootElement) then
 			if(not self:inCanvas()) then
-				self:dx()
+				if(self:isMaskEnabled()) then
+					self:drawMask()
+				else
+					self:dx()
+				end
 				callPrivateMethod(self, "generateCanvas")
 			end
 		end
@@ -317,7 +325,11 @@ function PrivateMethods:generateCanvas()
 			x, y = child:getInheritedBasePosition()
 		end
 		
-		child:dx(x, y)
+		if(child:isMaskEnabled()) then
+			child:drawMask(x, y)
+		else
+			child:dx(x, y)
+		end
 	end
 	
 	dxSetRenderTarget()
@@ -334,12 +346,17 @@ function PrivateMethods:refreshIndex()
 	return false
 end
 
-
 function PrivateMethods:refreshEventHandlers()
 	removeEventHandler("onClientRender", root, getPrivateMethod(self, "render"))
 	addEventHandler("onClientRender", root, getPrivateMethod(self, "render"))
 	removeEventHandler("onClientPreRender", root, getPrivateMethod(self, "prerender"))
 	addEventHandler("onClientPreRender", root, getPrivateMethod(self, "prerender"))	
+end
+
+--Basically just an alias (for better naming)
+function PrivateMethods:updateCachedTextures()
+	self:getTexture()
+	self:getMaskTexture()
 end
 
 -- *************************************************
@@ -458,6 +475,12 @@ function DxElement:virtual_constructor(x, y, width, height)
 		state = false
 	}
 	
+	self.mask = {
+		state = false,
+		shader = false,
+		texture = false
+	}
+	
 	self.textColor = getStyleSetting("general", "text_color")
 	
 	self.initTime = getTickCount()
@@ -477,6 +500,8 @@ function DxElement:virtual_constructor(x, y, width, height)
 	
 	self:addRenderFunction(getPrivateMethod(self, "updateInheritedBounds"))
 	self:addRenderFunction(getPrivateMethod(self, "forceInBounds"), true)
+	
+	self:addRenderFunction(getPrivateMethod(self, "updateCachedTextures"), true)
 	
 	callPrivateMethod(self, "updateInheritedBounds")
 	callPrivateMethod(self, "forceInBounds")
@@ -526,10 +551,50 @@ function DxElement:inCanvas(parent)
 	return false
 end
 
+-- **************************************************************************
+
 function DxElement:getTexture()
-	local canvas = dxCreateRenderTarget(self.width, self.height, true)
+	if(not self.cachedTexture) then
+		self.cachedTexture = dxCreateRenderTarget(self.width, self.height)
+	end
 	
-	dxSetRenderTarget(canvas)
+	dxSetRenderTarget(self.cachedTexture, true)
+	
+	if(self:isMaskEnabled()) then
+		self:drawMask(0, 0)
+	else
+		self:dx(0, 0)
+	end
+	
+	local children = self:getInheritedChildren()
+	
+	for i=#children,1,-1 do
+		local child = children[i]
+		local x, y = child.baseX, child.baseY
+		
+		if(child.parent ~= self) then
+			x, y = child:getInheritedBasePosition()
+		end
+		
+		if(child:isMaskEnabled()) then
+			child:drawMask(x, y)
+		else
+			child:dx(x, y)
+		end
+	end
+	
+	dxSetRenderTarget()
+	
+	return self.cachedTexture
+end
+
+--Needs to be separate for mask
+function DxElement:getMaskTexture()
+	if(not self.cachedMaskTexture) then
+		self.cachedMaskTexture = dxCreateRenderTarget(self.width, self.height, true)
+	end
+	
+	dxSetRenderTarget(self.cachedMaskTexture, true)
 	
 	self:dx(0, 0)
 	
@@ -548,7 +613,48 @@ function DxElement:getTexture()
 	
 	dxSetRenderTarget()
 	
-	return canvas
+	return self.cachedMaskTexture
+end
+
+-- **************************************************************************
+
+function DxElement:applyMask(mask)
+	if(not self.mask.shader) then
+		self.mask.shader = dxCreateShader("assets/shaders/mask.fx")
+	end
+	
+	self.mask.texture = mask
+	
+	if(not isElement(self.mask.texture)) then
+		self.mask.texture = dxCreateTexture(self.mask.texture, "argb", true, "clamp")
+	end
+	
+	dxSetShaderValue(self.mask.shader, "ScreenTexture", self:getMaskTexture())
+	dxSetShaderValue(self.mask.shader, "MaskTexture", self.mask.texture)
+	
+	self.mask.state = true
+	
+	return true
+end
+
+function DxElement:isMaskEnabled()
+	return self.mask.state
+end
+
+function DxElement:setMaskEnabled(state)
+	self.mask.state = state and true or false
+	
+	return true
+end
+
+function DxElement:drawMask(x, y)
+	x, y = x or self.x, y or self.y
+	
+	if(not self:isMaskEnabled()) then
+		return false
+	end
+	
+	dxDrawImage(x, y, self.width, self.height, self.mask.shader)
 end
 
 -- **************************************************************************
