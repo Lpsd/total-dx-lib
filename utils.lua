@@ -36,18 +36,17 @@ function createCircleMask(width, height, padding)
 	
 	radius = radius - padding
 	
-	for r=radius, 1, -1 do
-		for i=0, 360, 0.1 do
-			local angle = i
-			
-			local x = (r * math.cos(angle * math.pi / 180)) + radius + padding
-			local y = (r * math.sin(angle * math.pi / 180)) + radius + padding
-			
-			dxSetPixelColor(pixels, x, y, 255, 255, 255, 255)
-		end
-	end
+	local renderTarget = dxCreateRenderTarget(width, height)
 	
-	dxSetTexturePixels(texture, pixels)	
+	dxSetRenderTarget(renderTarget)
+	dxSetBlendMode("modulate_add")
+	
+	dxDrawImage(0, 0, width, height, texture)
+	
+	dxDrawCircle(radius+padding, radius+padding, radius)
+	
+	dxSetBlendMode("blend") 
+	dxSetRenderTarget()
 		
-	return texture	
+	return renderTarget	
 end
