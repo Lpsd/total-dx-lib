@@ -32,9 +32,11 @@ function DxWindow:constructor(x, y, width, height, titlebarText)
 	self.close.element:setPosition(self.width - self.titlebar.height)
 	self.close.element:setColor(255, 55, 55, 255)
 	
-	self.close.closeOnClick = function()
-		if (self.close.state) then
-			self:delete()
+	self.close.closeOnClick = function(button, state, x, y)
+		if(button == "left") and (state == "down") then
+			if (self.close.state) then
+				self:delete()
+			end
 		end
 	end
 	

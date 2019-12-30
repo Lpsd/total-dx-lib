@@ -147,43 +147,49 @@ function PrivateMethods:click(button, state, x, y)
 		self.dragInitialX, self.dragInitialY = false, false
 	end
 	
-	if(button == "left") and (state == "down") then
-		if(not DxInfo.draggingElement) then
-			if(self:isMouseOverElement()) then
-				for i,element in ipairs(self.children) do
-					if(element:isMouseOverElement()) then
-						return callPrivateMethod(element, "click", "left", "down", x, y)
-					end
-				end
-				
-				if(not self:isObstructed(x, y)) then	
-					if(self:hasParent()) then
-						if(self.parent:getProperty("child_dragging")) then
-							if(self:getProperty("allow_drag")) then
-								if(isMouseInPosition(self.x + self.dragArea.x, self.y + self.dragArea.y, self.dragArea.width, self.dragArea.height)) then
-									self:bringToFront()
-									self.dragging = true
-									DxInfo.draggingElement = self
-								end		
-							end
-						end
-					else
-						if(self:getProperty("allow_drag")) then
-							if(isMouseInPosition(self.x + self.dragArea.x, self.y + self.dragArea.y, self.dragArea.width, self.dragArea.height)) then
-								self:bringToFront()
-								self.dragging = true
-								DxInfo.draggingElement = self
-							end	
-						end
+	if(DxInfo.draggingElement) then
+		return false
+	end
+	
+	if(not self:isMouseOverElement()) then
+		return false
+	end
+	
+	for i,element in ipairs(self.children) do
+		if(element:isMouseOverElement()) then
+			return callPrivateMethod(element, "click", button, state, x, y)
+		end
+	end
+	
+	if(self:isObstructed(x, y)) then
+		return false
+	end
+
+	if(button == "left") and (state == "down") then	
+		if(self:hasParent()) then
+			if(self.parent:getProperty("child_dragging")) then
+				if(self:getProperty("allow_drag")) then
+					if(isMouseInPosition(self.x + self.dragArea.x, self.y + self.dragArea.y, self.dragArea.width, self.dragArea.height)) then
+						self:bringToFront()
+						self.dragging = true
+						DxInfo.draggingElement = self
 					end		
-					
-					for i, func in ipairs(self.clickFunctions) do
-						func(x, y)
-					end
 				end
 			end
-		end
+		else
+			if(self:getProperty("allow_drag")) then
+				if(isMouseInPosition(self.x + self.dragArea.x, self.y + self.dragArea.y, self.dragArea.width, self.dragArea.height)) then
+					self:bringToFront()
+					self.dragging = true
+					DxInfo.draggingElement = self
+				end	
+			end
+		end		
 	end	
+	
+	for i, func in ipairs(self.clickFunctions) do
+		func(button, state, x, y)
+	end
 end
 
 function PrivateMethods:updateInheritedBounds()
@@ -263,6 +269,10 @@ function PrivateMethods:forceInBounds()
 end
 
 function PrivateMethods:cursorMove(relX, relY, absX, absY)
+	if(not self:getProperty("hover_enabled")) then
+		return false
+	end
+	
 	if(self:isMouseOverElement()) then
 		if(not self:isObstructed(absX, absY)) then
 			if(self.hover) then
@@ -420,7 +430,8 @@ function DxElement:virtual_constructor(x, y, width, height)
 		["drag_preview"] = false,
 		["child_dragging"] = true,
 		["ignore_window_bounds"] = false,
-		["obstruct"] = true
+		["obstruct"] = true,
+		["hover_enabled"] = true
 	}
 	
 	self.bounds = {
@@ -584,8 +595,6 @@ function DxElement:addClickFunction(func)
 	if(type(func) ~= "function") then
 		return false
 	end
-	
-	func = bind(func, self)
 	
 	return table.insert(self.clickFunctions, func)
 end

@@ -14,19 +14,19 @@ function init()
 	
 	--Debug testing
 	if(DEBUG) then
-		window = DxWindow:new(300, 300, 300, 300, "Primary Window")
+		local window = DxWindow:new(300, 300, 300, 300, "Primary Window")
 		
-		input = DxInput:new(50, 50, 200, 35, "Lorem Ipsum is simply dummy text of the printing and typesetting industry.")
+		local input = DxInput:new(50, 50, 200, 35, "Lorem Ipsum is simply dummy text of the printing and typesetting industry.")
 		input:setParent(window)
 		
-		button = DxButton:new(75, 100, 150, 35, "Button")
+		local button = DxButton:new(75, 100, 150, 35, "Button")
 		button:setParent(window)
 		
 		local texture = window:getTexture()
 		local width, height = window:getSize()
 		
-		image = DxImage:new(SCREEN_WIDTH - width, 0, width, height, texture)
-		label = DxText:new(SCREEN_WIDTH - width, 0, width, height, "(texture)")
+		local image = DxImage:new(SCREEN_WIDTH - width, 0, width, height, texture)
+		local label = DxText:new(SCREEN_WIDTH - width, 0, 100, 35, "(texture)")
 	end
 end
 addEventHandler("onClientResourceStart", resourceRoot, init)

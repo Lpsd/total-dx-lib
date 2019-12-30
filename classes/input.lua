@@ -58,7 +58,13 @@ function DxInput:constructor(x, y, width, height, text)
 	end
 	
 	self:addClickFunction(self.setGUIElementFocused)
-	self:addClickFunction(self.setCaretIndexOnClick)
+	
+	self.fSetCaretIndexOnClick = function(button, state, x, y)
+		if(button == "left" and state == "down") then
+			self:setCaretIndexOnClick(x, y)
+		end
+	end
+	self:addClickFunction(self.fSetCaretIndexOnClick)
 	
 	self.fOnClientGUIChanged = bind(self.onClientGUIChanged, self)
 	addEventHandler("onClientGUIChanged", root, self.fOnClientGUIChanged)

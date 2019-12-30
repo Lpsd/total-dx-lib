@@ -25,6 +25,8 @@ function DxText:constructor(x, y, width, height, text, textColor, alignX, alignY
 		x = alignX or "left",
 		y = alignY or "top"
 	}
+	
+	self:setProperty("hover_enabled", false)
 end
 
 function DxText:dx(x, y)
