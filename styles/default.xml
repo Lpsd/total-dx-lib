@@ -2,7 +2,7 @@
 
 	<general>
 		<style name="primary_color" r=33 g=33 b=33 a=255 />
-		<style name="hover_color" r=33 g=33 b=33 a=225 />
+		<style name="hover_color" r=33 g=33 b=33 a=254 />
 		<style name="text_color" r=255 g=255 b=255 a=255 />
 	</general>
 	
@@ -18,6 +18,13 @@
 	<input>
 		<style name="primary_color" r=255 g=255 b=255 a=255 />
 		<style name="text_color" r=10 g=10 b=10 a=255 />
+		<style name="selection_color" r=0 g=0 b=0 a=50 />
 	</input>
+	
+	<button>
+		<style name="primary_color" r=66 g=66 b=66 a=255 />
+		<style name="text_color" r=255 g=255 b=255 a=255 />
+		<style name="hover_color" r=66 g=66 b=66 a=150 />
+	</button>
 	
 </elements>

@@ -22,6 +22,9 @@ function init()
 		
 		image = DxImage:new(100, 100, 50, 50, "assets/images/64x64.png")
 		image:setParent(window)
+		
+		button = DxButton:new(75, 75, 150, 35, "Button")
+		button:setParent(window2)
 	end
 end
 addEventHandler("onClientResourceStart", resourceRoot, init)

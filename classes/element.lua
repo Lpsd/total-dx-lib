@@ -56,6 +56,7 @@ function PrivateMethods:draw(allow, parent)
 		end
 	else
 		if(not self:inCanvas()) then
+			self:dx()
 			callPrivateMethod(self, "generateCanvas")
 		end
 	end
@@ -294,7 +295,7 @@ function PrivateMethods:generateCanvas()
 	
 	dxSetRenderTarget(self:getCanvas(), clearRenderTarget)
 	
-	self:dx(0, 0)
+	-- self:dx(0, 0)
 	
 	local children = self:getInheritedChildren()
 	
@@ -446,15 +447,7 @@ function DxElement:virtual_constructor(x, y, width, height)
 		state = false
 	}
 	
-	
-	local defaultTextColor = getStyleSetting("general", "text_color")
-	
-	self.textColor = {
-		r = defaultTextColor.r,
-		g = defaultTextColor.g,
-		b = defaultTextColor.b,
-		a = defaultTextColor.a
-	}
+	self.textColor = getStyleSetting("general", "text_color")
 	
 	self.initTime = getTickCount()
 	
@@ -994,6 +987,22 @@ function DxElement:isSizeUpdated()
 	end
 	
 	return false
+end
+
+-- **************************************************************************
+
+function DxElement:setText(text)
+	if(type(text) ~= "string") then
+		return false
+	end
+	
+	self.text = text
+	
+	return true
+end
+
+function DxElement:getText()
+	return self.text
 end
 
 -- **************************************************************************

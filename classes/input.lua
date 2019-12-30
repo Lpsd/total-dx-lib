@@ -26,7 +26,8 @@ function DxInput:constructor(x, y, width, height, text)
 		bounds = {
 			x = 0,
 			width = 0
-		}
+		},
+		color = getStyleSetting("input", "selection_color")
 	}
 	
 	self.caret = {
@@ -48,14 +49,7 @@ function DxInput:constructor(x, y, width, height, text)
 	local primaryColor = getStyleSetting("input", "primary_color")
 	self:setColor(primaryColor.a, primaryColor.g, primaryColor.b, primaryColor.a)
 	
-	local defaultTextColor = getStyleSetting("input", "text_color")
-	
-	self.textColor = {
-		r = defaultTextColor.r,
-		g = defaultTextColor.g,
-		b = defaultTextColor.b,
-		a = defaultTextColor.a
-	}
+	self.textColor = getStyleSetting("input", "text_color")
 	
 	self.setGUIElementFocused = function()
 		guiSetInputMode("no_binds")
@@ -121,7 +115,7 @@ function DxInput:dx(x, y)
 	
 	--Draw text selection overlay
 	if(self.selection.length > 0) then
-		dxDrawRectangle(text.left + self.selection.bounds.x, y+(self.height*0.25/2), self.selection.bounds.width, self.height*0.75, tocolor(0,0,75,50))
+		dxDrawRectangle(text.left + self.selection.bounds.x, y+(self.height*0.25/2), self.selection.bounds.width, self.height*0.75, tocolor(self.selection.color.r, self.selection.color.g, self.selection.color.g, self.selection.color.a))
 	end
 end
 
