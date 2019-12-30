@@ -35,12 +35,7 @@ end
 
 -- *************************************************
 
-function PrivateMethods:draw(allow, parent)
-	-- Hacky solution for bypassing 1/2 frames of delay when initializing an element (relating to onClient(pre)Render and private methods)
-	if(getTickCount() < (self.initTime + 10)) then
-		return
-	end
-	
+function PrivateMethods:draw(allow, parent)	
 	local isRootElement = self:isRootElement()
 	
 	if(not self:hasCanvas()) then
@@ -80,24 +75,25 @@ function PrivateMethods:drawCanvas()
 	end
 end
 
-
-function PrivateMethods:render()
-	for i, func in ipairs(self.renderFunctions.normal) do
-		func() 
-	end
-	
+function PrivateMethods:updatePreviousDimensions()
 	self.previousX, self.previousY = self.x, self.y
 	self.previousBaseX, self.previousBaseY = self.baseX, self.baseY
 	self.previousWidth, self.previousHeight = self.width, self.height
 end
 
-function PrivateMethods:prerender()
-	for i, func in ipairs(self.renderFunctions.prerender) do
+function PrivateMethods:render()
+	for i, func in ipairs(self.renderFunctions.normal) do
 		func() 
-	end
-	
+	end	
+end
+
+function PrivateMethods:prerender()
 	if(self:hasParent()) then
 		self.x, self.y = self.baseX + self.parent.x, self.baseY + self.parent.y
+	end
+	
+	for i, func in ipairs(self.renderFunctions.prerender) do
+		func() 
 	end
 end
 
@@ -485,26 +481,24 @@ function DxElement:virtual_constructor(x, y, width, height)
 	
 	self.initTime = getTickCount()
 	
-	addEventHandler("onClientRender", root, getPrivateMethod(self, "render"))
-	addEventHandler("onClientPreRender", root, getPrivateMethod(self, "prerender"))	
-	
 	addEventHandler("onClientClick", root, getPrivateMethod(self, "click"))
 
 	addEventHandler("onClientCursorMove", root, getPrivateMethod(self, "cursorMove"))
-
-	self:addRenderFunction(getPrivateMethod(self, "draw"))
-	
-	self:addRenderFunction(getPrivateMethod(self, "drawCanvas"))
 	
 	self:addRenderFunction(getPrivateMethod(self, "drag"), true)
 	
 	self:addRenderFunction(getPrivateMethod(self, "updateInheritedBounds"))
-	self:addRenderFunction(getPrivateMethod(self, "forceInBounds"), true)
+	self:addRenderFunction(getPrivateMethod(self, "forceInBounds"))
 	
-	self:addRenderFunction(getPrivateMethod(self, "updateCachedTextures"), true)
+	self:addRenderFunction(getPrivateMethod(self, "updateCachedTextures"))
 	
-	callPrivateMethod(self, "updateInheritedBounds")
-	callPrivateMethod(self, "forceInBounds")
+	self:addRenderFunction(getPrivateMethod(self, "draw"))
+	self:addRenderFunction(getPrivateMethod(self, "drawCanvas"))
+	
+	self:addRenderFunction(getPrivateMethod(self, "updatePreviousDimensions"))
+	
+	addEventHandler("onClientRender", root, getPrivateMethod(self, "render"))
+	addEventHandler("onClientPreRender", root, getPrivateMethod(self, "prerender"))		
 	
 	DxElements[self.index] = self
 
@@ -832,6 +826,10 @@ function DxElement:setParent(parent)
 	
 	self.parent = parent
 	self:setIndex(1)
+	
+	callPrivateMethod(self, "updateInheritedBounds")
+	callPrivateMethod(self, "forceInBounds")
+	callPrivateMethod(self, "prerender")
 	
 	return true	
 end
