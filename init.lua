@@ -25,7 +25,7 @@ function init()
 		local width, height = 150, 150
 		local image = DxImage:new(75, 200, width, height, "assets/images/boris.jpg")
 		
-		local mask = createCircleMask(width, height)
+		local mask = createCircleMask(width, height, 10)
 		image:applyMask(mask)
 		
 		image:setParent(window)
