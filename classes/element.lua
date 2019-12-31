@@ -33,6 +33,16 @@ local function callPrivateMethod(class, methodName, ...)
 	return func(...)
 end
 
+local function isPrivateMethodFunctionBound(class, func)
+	for methodName, boundFunc in pairs(PrivateMethodCache[class]) do
+		if(boundFunc == func) then
+			return true
+		end
+	end
+	
+	return false
+end
+
 -- *************************************************
 
 function PrivateMethods:draw(allow)
@@ -665,7 +675,11 @@ function DxElement:addRenderFunction(func, prerender)
 	if(type(func) ~= "function") then
 		return false
 	end
-	func = bind(func, self)
+	
+	if(not isPrivateMethodFunctionBound(self, func)) then
+		func = bind(func, self)
+	end
+	
 	local tbl = self.renderFunctions.normal
 	if(prerender) then
 		tbl = self.renderFunctions.prerender
@@ -1091,6 +1105,34 @@ end
 
 function DxElement:getHoverColor()
 	return self.hoverColor.r, self.hoverColor.g, self.hoverColor.b, self.hoverColor.a
+end
+
+-- **************************************************************************
+
+function DxElement:setTextColor(r, g, b, a)
+	r, g, b, a = tonumber(r), tonumber(g), tonumber(b), tonumber(a)
+	
+	if(r) then
+		self.textColor.r = (r >= 0 and r <= 255) and r or self.textColor.r
+	end
+	
+	if(g) then
+		self.textColor.g = (g >= 0 and g <= 255) and g or self.textColor.g
+	end
+	
+	if(b) then
+		self.textColor.b = (b >= 0 and b <= 255) and b or self.textColor.b
+	end
+	
+	if(a) then
+		self.textColor.a = (a >= 0 and a <= 255) and a or self.textColor.a
+	end
+	
+	return true
+end
+
+function DxElement:getTextColor()
+	return self.textColor.r, self.textColor.g, self.textColor.b, self.textColor.a
 end
 
 -- **************************************************************************
