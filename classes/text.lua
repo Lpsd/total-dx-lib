@@ -14,12 +14,7 @@ function DxText:constructor(x, y, width, height, text, textColor, alignX, alignY
 	
 	local textR, textG, textB, textA = decimalToRGBA(textColor)
 	
-	self.textColor = {
-		r = textR,
-		g = textG,
-		b = textB,
-		a = textA
-	}
+	self:setTextColor(textR, textG, textB, textA)
 	
 	self.align = {
 		x = alignX or "left",

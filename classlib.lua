@@ -363,5 +363,5 @@ function registerElementClass(name, class)
 	oop.elementClasses[name] = class
 end
 
-oop.prepareClass("Player")
-oop.prepareClass("Element")
+-- oop.prepareClass("Player")
+-- oop.prepareClass("Element")

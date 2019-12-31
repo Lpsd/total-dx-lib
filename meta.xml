@@ -19,6 +19,7 @@
 	<script src="classes/input.lua" type="client" />
 	<script src="classes/image.lua" type="client" />
 	<script src="classes/button.lua" type="client" />
+	<script src="classes/checkbox.lua" type="client" />
 	
 	<!-- Assets -->
 	<file src="assets/images/64x64.png" />

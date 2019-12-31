@@ -22,19 +22,8 @@ function init()
 		local button = DxButton:new(75, 100, 150, 35, "Button")
 		button:setParent(window)
 		
-		local width, height = 400, 400
-		local image = DxImage:new(75, 200, width, height, "assets/images/boris.jpg")
-		
-		local mask = createCircleMask(width, height, 10)
-		image:applyMask(mask)
-		
-		image:setParent(window)
-		
-		local width, height = window:getSize()
-		local texture = window:getTexture()
-		
-		local clone = DxImage:new(SCREEN_WIDTH - width, 0, width, height, texture)
-		local label = DxText:new(SCREEN_WIDTH - width, 0, width, height, "(texture)")
+		local checkbox = DxCheckbox:new(75, 150, 150, 35, "I am a checkbox")
+		checkbox:setParent(window)
 	end
 end
 addEventHandler("onClientResourceStart", resourceRoot, init)
