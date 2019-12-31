@@ -73,7 +73,7 @@ function DxInput:constructor(x, y, width, height, text)
 	addEventHandler("onClientGUIBlur", self.guiElement, self.fOnClientGUIBlur)
 	
 	self.fOnClientClick = bind(self.onClientClick, self)
-	addEventHandler("onClientClick", root, self.fOnClientClick)
+	self:addClickFunction(self.fOnClientClick)
 	
 	self.fOnClientKey = bind(self.onClientKey, self)
 	addEventHandler("onClientKey", root, self.fOnClientKey)

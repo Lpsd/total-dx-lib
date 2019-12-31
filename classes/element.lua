@@ -38,7 +38,7 @@ end
 function PrivateMethods:draw(allow)
 	local isRootElement = self:isRootElement()
 	
-	if(not self:hasCanvas()) then
+	if(not self:isCanvasEnabled()) then
 		if(self:hasParent() and not allow) then
 			return false
 		end
@@ -72,7 +72,7 @@ function PrivateMethods:draw(allow)
 end
 
 function PrivateMethods:drawCanvas()
-	if(self:hasCanvas()) then
+	if(self:isCanvasEnabled()) then
 		if(self:isRootElement()) then
 			dxDrawImage(self.x, self.y, self.canvas.width, self.canvas.height, self:getCanvas())
 		end
@@ -242,6 +242,10 @@ function PrivateMethods:forceInBounds()
 			end
 		end
 		
+		if(self.width > targetArea.width) or (self.height > targetArea.height) then
+			return false
+		end		
+		
 		if(self.baseX + self.width) > (targetArea.width) then
 			self.baseX = (targetArea.width) - self.width
 		elseif(self.baseX) < targetArea.x then
@@ -295,7 +299,7 @@ function PrivateMethods:cursorMove(relX, relY, absX, absY)
 end
 
 function PrivateMethods:generateCanvas()
-	if(not self:hasCanvas()) then
+	if(not self:isCanvasEnabled()) then
 		self:createCanvas()
 	end
 	
@@ -530,14 +534,14 @@ function DxElement:getCanvas()
 	return self.canvas.texture or false
 end
 
-function DxElement:hasCanvas()
+function DxElement:isCanvasEnabled()
 	return self.canvas.state
 end
 
 function DxElement:inCanvas(parent)
 	parent = parent or self:getParent()
 	if(parent) then
-		if(parent:hasCanvas()) then
+		if(parent:isCanvasEnabled()) then
 			return true
 		else
 			if(parent:hasParent()) then
@@ -781,24 +785,26 @@ function DxElement:getInheritedBounds()
 			y = self.height
 		}
 	}
-
-	for i,element in ipairs(self:getInheritedChildren()) do
-		local x, y = element.x - self.x, element.y - self.y
-		
-		if(x < bounds.min.x) then
-			bounds.min.x = x
-		end
-		
-		if(y < bounds.min.y) then
-			bounds.min.y = y
-		end
-		
-		if((x + element.width) > bounds.max.x) then
-			bounds.max.x = (x + element.width)
-		end
-		
-		if((y + element.height) > bounds.max.y) then
-			bounds.max.y = (y + element.height)
+	
+	if(not self:isCanvasEnabled()) then
+		for i,element in ipairs(self:getInheritedChildren()) do
+			local x, y = element.x - self.x, element.y - self.y
+			
+			if(x < bounds.min.x) then
+				bounds.min.x = x
+			end
+			
+			if(y < bounds.min.y) then
+				bounds.min.y = y
+			end
+			
+			if((x + element.width) > bounds.max.x) then
+				bounds.max.x = (x + element.width)
+			end
+			
+			if((y + element.height) > bounds.max.y) then
+				bounds.max.y = (y + element.height)
+			end
 		end
 	end
 	
