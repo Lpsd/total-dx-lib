@@ -11,7 +11,8 @@ function DxButton:constructor(x, y, width, height, text)
 	local hoverColor = getStyleSetting("button", "hover_color")
 	self:setHoverColor(nil, nil, nil, hoverColor.a)
 	
-	self.textColor = getStyleSetting("button", "text_color")
+	local defaultTextColor = getStyleSetting("button", "text_color")
+	self:setTextColor(defaultTextColor.r, defaultTextColor.g, defaultTextColor.b, defaultTextColor.a)
 end
 
 function DxButton:dx(x, y)

@@ -52,7 +52,11 @@ function getStyleData(styleName)
 					attribute = tonumber(attribute) or attribute
 				end
 				
-				style[elementType][attributes.name] = attributes
+				local attributeName = attributes.name
+				
+				attributes.name = nil
+				
+				style[elementType][attributeName] = attributes
 			end
 		end
 		

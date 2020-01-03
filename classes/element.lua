@@ -124,7 +124,14 @@ function DxElement:virtual_constructor(x, y, width, height)
 		texture = false
 	}
 	
-	self.textColor = getStyleSetting("general", "text_color")
+	local textColor = getStyleSetting("general", "text_color")
+
+	self.textColor = {
+	  r = textColor.r,
+	  g = textColor.g,
+	  b = textColor.b,
+	  a = textColor.a
+	}
 	
 	self.initTime = getTickCount()
 	
