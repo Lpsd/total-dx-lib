@@ -11,6 +11,8 @@
 	<script src="utils.lua" type="client" />
 	<script src="style.lua" type="client" />
 	
+	<script src="_private.lua" type="client" />
+	
 	<!-- Element Classes -->
 	<script src="classes/element.lua" type="client" />	
 	<script src="classes/blank.lua" type="client" />	

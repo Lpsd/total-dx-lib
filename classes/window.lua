@@ -21,16 +21,15 @@ function DxWindow:constructor(x, y, width, height, titlebarText)
 	
 	self.close = {
 		state = true,
-		element = DxText:new(0, 0, self.titlebar.height, self.titlebar.height, "x", nil, "center", "center")
+		element = DxText:new(0, 0, self.titlebar.height, self.titlebar.height, "x", "center", "center")
 	}
 	
 	local closeButtonColor = getStyleSetting("window", "close_button_bg_color")
 	
-	self.close.element:setColor(closeButtonColor.r, closeButtonColor.g, closeButtonColor.b)
+	self.close.element:setColor(closeButtonColor.r, closeButtonColor.g, closeButtonColor.b, closeButtonColor.a)
 	self.close.element:setProperty("ignore_window_bounds", true)
-	self.close.element:setParent(self)
 	self.close.element:setPosition(self.width - self.titlebar.height)
-	self.close.element:setColor(255, 55, 55, 255)
+	self.close.element:setParent(self)
 	
 	self.close.closeOnClick = function(button, state, x, y)
 		if(button == "left") and (state == "down") then

@@ -13,6 +13,7 @@
 	
 	<text>
 		<style name="primary_color" r=255 g=255 b=255 a=0 />
+		<style name="text_color" r=255 g=255 b=255 a=255 />
 	</text>
 	
 	<input>
@@ -26,5 +27,11 @@
 		<style name="text_color" r=255 g=255 b=255 a=255 />
 		<style name="hover_color" r=66 g=66 b=66 a=150 />
 	</button>
+	
+	<checkbox>
+		<style name="checkbox_color" r=255 g=255 b=255 a=255 />
+		<style name="checkbox_text_color" r=33 g=33 b=33 a=255 />
+		<style name="text_color" r=255 g=255 b=255 a=255 />
+	</checkbox>
 	
 </elements>

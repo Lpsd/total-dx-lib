@@ -1,20 +1,16 @@
 DxText = inherit(DxElement)
 
-function DxText:constructor(x, y, width, height, text, textColor, alignX, alignY)	
+function DxText:constructor(x, y, width, height, text, alignX, alignY)	
 	self.type = "dx-text"
 	self.text = text
 	
 	local defaultPrimaryColor = getStyleSetting("text", "primary_color")
+	self:setColor(defaultPrimaryColor.r, defaultPrimaryColor.g, defaultPrimaryColor.b, 0)
 	
-	self:setColor(defaultPrimaryColor.r, defaultPrimaryColor.g, defaultPrimaryColor.b, defaultPrimaryColor.a)
+	self.hoverColor.a = 255
 	
-	local defaultTextColor = getStyleSetting("general", "text_color")
-	
-	textColor = textColor or tocolor(defaultTextColor.r, defaultTextColor.g, defaultTextColor.b, defaultTextColor.a)
-	
-	local textR, textG, textB, textA = decimalToRGBA(textColor)
-	
-	self:setTextColor(textR, textG, textB, textA)
+	local defaultTextColor = getStyleSetting("text", "text_color")
+	self:setTextColor(defaultTextColor.r, defaultTextColor.g, defaultTextColor.b, defaultTextColor.a)
 	
 	self.align = {
 		x = alignX or "left",

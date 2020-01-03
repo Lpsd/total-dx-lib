@@ -14,16 +14,10 @@ function init()
 	
 	--Debug testing
 	if(DEBUG) then
-		local window = DxWindow:new(300, 300, 300, 300, "Primary Window")
+		local text1 = DxText:new(75, 200, 150, 35, "testing text")
 		
-		local input = DxInput:new(50, 50, 200, 35, "Lorem Ipsum is simply dummy text of the printing and typesetting industry.")
-		input:setParent(window)
-		
-		local button = DxButton:new(75, 100, 150, 35, "Button")
-		button:setParent(window)
-		
-		local checkbox = DxCheckbox:new(75, 150, 150, 35, "I am a checkbox")
-		checkbox:setParent(window)
+		local text2 = DxText:new(75, 225, 150, 35, "testing text")
+		text2:setTextColor(255, 255, 0)
 	end
 end
 addEventHandler("onClientResourceStart", resourceRoot, init)

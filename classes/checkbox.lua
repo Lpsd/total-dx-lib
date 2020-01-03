@@ -5,6 +5,8 @@ function DxCheckbox:constructor(x, y, width, height, text, selected)
 	
 	self.text = text
 	
+	self.textColor = getStyleSetting("checkbox", "text_color")
+	
 	self.checkbox = {
 		width = math.min(height, 20),
 		height = math.min(height, 20),
@@ -13,10 +15,13 @@ function DxCheckbox:constructor(x, y, width, height, text, selected)
 	
 	local checkX, checkY = self:getCheckboxBounds()
 	
-	self.checkbox.element = DxText:new(checkX-self.x, checkY-self.y, self.checkbox.height, self.checkbox.height, "", nil, "center", "center")
+	self.checkbox.element = DxText:new(checkX-self.x, checkY-self.y, self.checkbox.height, self.checkbox.height, "", "center", "center")
 	
-	self.checkbox.element:setColor(255, 255, 255, 255)
-	self.checkbox.element:setTextColor(33, 33, 33)
+	local checkboxColor = getStyleSetting("checkbox", "checkbox_color")
+	local checkboxTextColor = getStyleSetting("checkbox", "checkbox_text_color")
+	
+	self.checkbox.element:setColor(checkboxColor.r, checkboxColor.g, checkboxColor.b, checkboxColor.a)
+	self.checkbox.element:setTextColor(checkboxTextColor.r, checkboxTextColor.g, checkboxTextColor.b, checkboxTextColor.a)
 	self.checkbox.element:setParent(self)
 	
 	self.checkbox.fToggleSelectedState = function(button, state, x, y)
@@ -35,7 +40,7 @@ function DxCheckbox:dx(x, y)
 	
 	local padding = (self.height - self.checkbox.height) / 2
 	
-	dxDrawText(self.text, x + padding + self.checkbox.width + (padding*2), y, x + self.width, y + self.height, tocolor(255, 255, 255, 255), 1, "default", "left", "center")
+	dxDrawText(self.text, x + padding + self.checkbox.width + (padding*2), y, x + self.width, y + self.height, tocolor(self.textColor.r, self.textColor.g, self.textColor.b, self.textColor.a), 1, "default", "left", "center")
 end
 
 function DxCheckbox:setSelected(state)
