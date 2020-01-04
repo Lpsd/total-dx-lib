@@ -207,6 +207,7 @@ function DxElement:getTexture()
 	end
 	
 	dxSetRenderTarget(self.cachedTexture, true)
+	dxSetBlendMode("add")
 	
 	if(self:isMaskEnabled()) then
 		self:drawMask(0, 0)
@@ -231,6 +232,7 @@ function DxElement:getTexture()
 		end
 	end
 	
+	dxSetBlendMode()
 	dxSetRenderTarget()
 	
 	return self.cachedTexture
@@ -243,6 +245,7 @@ function DxElement:getMaskTexture()
 	end
 	
 	dxSetRenderTarget(self.cachedMaskTexture, true)
+	dxSetBlendMode("add")
 	
 	self:dx(0, 0)
 	
@@ -259,6 +262,7 @@ function DxElement:getMaskTexture()
 		child:dx(x, y)
 	end
 	
+	dxSetBlendMode()
 	dxSetRenderTarget()
 	
 	return self.cachedMaskTexture
@@ -609,6 +613,34 @@ function DxElement:isInheritedChild(element)
 		end
 	end
 	return false
+end
+
+function DxElement:getInheritedChildrenByType(elementType)
+	local children = {}
+	for i, element in ipairs(self:getInheritedChildren()) do
+		if(element.type == elementType) then
+			table.insert(children, element)
+		end
+	end
+	
+	return children
+end
+
+-- **************************************************************************
+
+function DxElement:getChildren()
+	return self.children
+end
+
+function DxElement:getChildrenByType(elementType)
+	local children = {}
+	for i, element in ipairs(self:getChildren()) do
+		if(element.type == elementType) then
+			table.insert(children, element)
+		end
+	end
+	
+	return children
 end
 
 -- **************************************************************************

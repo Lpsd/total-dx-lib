@@ -329,15 +329,8 @@ function PrivateMethods:generateCanvas()
 		self.canvas.width, self.canvas.height = self.width, self.height
 	end	
 	
-	local clearRenderTarget = false
-	
-	for i, child in ipairs(self:getInheritedChildren()) do
-		if(child:isPositionUpdated()) or (child:isSizeUpdated()) then
-			clearRenderTarget = true
-		end
-	end
-	
-	dxSetRenderTarget(self:getCanvas(), clearRenderTarget)
+	dxSetRenderTarget(self:getCanvas(), true)
+	dxSetBlendMode("add")
 	
 	local children = self:getInheritedChildren()
 	
@@ -356,6 +349,7 @@ function PrivateMethods:generateCanvas()
 		end
 	end
 	
+	dxSetBlendMode()
 	dxSetRenderTarget()
 end
 
