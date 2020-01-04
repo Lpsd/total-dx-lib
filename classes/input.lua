@@ -454,6 +454,15 @@ function DxInput:getVisibleText()
 	return self.text.visibleText
 end
 
+function DxInput:getTextLength()
+	local characters = {}
+	utf8.gsub(self:getText(), ".", function(c)
+		table.insert(characters, c)
+	end)
+
+	return #characters
+end
+
 -- **************************************************************************
 
 function DxInput:getRelativeCaretIndex()
@@ -467,6 +476,7 @@ end
 -- **************************************************************************
 
 function DxInput:setMaxCaretIndex(index)
+	index = index <= self:getTextLength() and index or self:getTextLength()
 	self.text.maxCaretIndex = index
 	return true
 end
