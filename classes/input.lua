@@ -215,7 +215,7 @@ end
 -- x, width
 function DxInput:getTextSelectionBounds()	
 	local characters = {}
-	self:getText():gsub(".", function(c)
+	utf8.gsub(self:getText(), ".", function(c)
 		table.insert(characters, c)
 	end)
 	
@@ -267,7 +267,7 @@ function DxInput:getCaretIndexFromCursorPosition(cursorX, cursorY)
 	local bounds = self:getTextBounds()
 	
 	local characters = {}
-	self:getText():gsub(".", function(c)
+	utf8.gsub(self:getText(), ".", function(c)
 		table.insert(characters, c)
 	end)
 	
@@ -323,7 +323,7 @@ function DxInput:getCaretPosition()
 	local bounds = self:getTextBounds()
 	
 	local characters = {}
-	self:getText():gsub(".", function(c)
+	utf8.gsub(self:getText(), ".", function(c)
 		table.insert(characters, c)
 	end)
 
@@ -404,9 +404,9 @@ function DxInput:updateVisibleText()
 	local visibleWidth = 0
 	
 	local characters = {}
-	self:getText():gsub(".", function(c)
+	utf8.gsub(self:getText(), ".", function(c)
 		table.insert(characters, c)
-	end)	
+	end)
 
 	local lastCaretIndex
 	local offsetIndex = self:getTextOffsetIndex()
