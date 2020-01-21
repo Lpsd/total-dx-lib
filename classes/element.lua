@@ -58,7 +58,6 @@ function DxElement:virtual_constructor(x, y, width, height)
 	
 	self.type = "dx-element"
 	
-	self.centered = false
 	self.align = {
 		x = "top",
 		y = "left"
@@ -719,6 +718,10 @@ function DxElement:setVisible(bool)
 	return true
 end
 
+function DxElement:isVisible()
+	return self.visible
+end
+
 -- **************************************************************************
 
 function DxElement:setColor(r, g, b, a)
@@ -1015,3 +1018,36 @@ function DxElement:isFront()
 end
 
 -- **************************************************************************
+
+function DxElement:setCentered(horizontal, vertical)
+	local bounds = {
+		min = {
+			x = 0,
+			y = 0
+		},
+		max = {
+			x = self.width,
+			y = self.height
+		}
+	}
+	
+	if(self:hasParent()) then
+		bounds.min.x, bounds.min.y, bounds.max.x, bounds.max.y = self:getParent():getInheritedBounds()
+	end
+	
+	if(horizontal) then
+		local width = ((bounds.min.x < 0) and (-bounds.min.x) or bounds.min.x) + bounds.max.x
+		
+		local x = (width / 2) - (self.width / 2)
+		
+		self:setPosition(x)
+	end
+	
+	if(vertical) then
+		local height = ((bounds.min.y < 0) and (-bounds.min.y) or bounds.min.y) + bounds.max.y
+		
+		local y = (height / 2) - (self.height / 2)
+		
+		self:setPosition(nil, y)
+	end
+end

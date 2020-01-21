@@ -32,6 +32,13 @@ function createCircleTexture(width, height, color, padding)
 	
 	local r, g, b, a = decimalToRGBA(color)
 	
+	local color = {
+		r = r,
+		g = g,
+		b = b,
+		a = a
+	}
+	
 	local texture = dxCreateTexture(width, height, "argb", "clamp")
 	
 	local pixels = dxGetTexturePixels(texture)
@@ -44,7 +51,7 @@ function createCircleTexture(width, height, color, padding)
 	
 	radius = radius - padding
 	
-	for r=radius, 1, -1 do
+	for r=radius, 0, -1 do
 		local alpha = 255
 		
 		for i=0, 360, 0.1 do
@@ -83,10 +90,11 @@ function createCircleTexture(width, height, color, padding)
 					y = y - 0.75
 				else
 					y = y + 0.75
-				end				
+				end
 			end			
+			
 
-			dxSetPixelColor(pixels, x, y, r, g, b, alpha)
+			dxSetPixelColor(pixels, x, y, color.r, color.g, color.b, alpha)
 		end
 	end	
 	

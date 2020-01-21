@@ -25,7 +25,7 @@
 	<button>
 		<style name="primary_color" r=66 g=66 b=66 a=255 />
 		<style name="text_color" r=255 g=255 b=255 a=255 />
-		<style name="hover_color" r=66 g=66 b=66 a=150 />
+		<style name="hover_color" r=66 g=66 b=66 a=200 />
 	</button>
 	
 	<checkbox>
@@ -33,5 +33,11 @@
 		<style name="checkbox_text_color" r=33 g=33 b=33 a=255 />
 		<style name="text_color" r=255 g=255 b=255 a=255 />
 	</checkbox>
+	
+	<radiobutton>
+		<style name="button_background_color" r=255 g=255 b=255 a=255 />
+		<style name="button_selected_color" r=33 g=33 b=33 a=255 />
+		<style name="text_color" r=255 g=255 b=255 a=255 />
+	</radiobutton>	
 	
 </elements>

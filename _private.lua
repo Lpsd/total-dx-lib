@@ -46,6 +46,10 @@ end
 function PrivateMethods:draw(allow)
 	local isRootElement = self:isRootElement()
 	
+	if(self:isRootElement()) and (not self:isVisible()) then
+		return false
+	end
+	
 	if(not self:isCanvasEnabled()) then
 		if(self:hasParent() and not allow) then
 			return false
@@ -54,24 +58,28 @@ function PrivateMethods:draw(allow)
 		if(self:inCanvas()) then
 			return false
 		end
-			
-		if(self:isMaskEnabled()) then
-			self:drawMask()
-		else
-			self:dx()
-		end
-			
-		for i=#self.children,1,-1 do
-			local child = self.children[i]
-			callPrivateMethod(child, "draw", true)
+		
+		if(self:isVisible()) then
+			if(self:isMaskEnabled()) then
+				self:drawMask()
+			else
+				self:dx()
+			end
+				
+			for i=#self.children,1,-1 do
+				local child = self.children[i]
+				callPrivateMethod(child, "draw", true)
+			end
 		end
 	else
 		if(isRootElement) then
 			if(not self:inCanvas()) then
-				if(self:isMaskEnabled()) then
-					self:drawMask()
-				else
-					self:dx()
+				if(self:isVisible()) then
+					if(self:isMaskEnabled()) then
+						self:drawMask()
+					else
+						self:dx()
+					end
 				end
 				callPrivateMethod(self, "generateCanvas")
 			end
@@ -175,12 +183,6 @@ function PrivateMethods:click(button, state, x, y)
 	
 	if(not self:isMouseOverElement()) then
 		return false
-	end
-	
-	for i,element in ipairs(self.children) do
-		if(element:isMouseOverElement()) then
-			return callPrivateMethod(element, "click", button, state, x, y)
-		end
 	end
 	
 	if(self:isObstructed(x, y)) then
@@ -334,7 +336,7 @@ function PrivateMethods:generateCanvas()
 	
 	local children = self:getInheritedChildren()
 	
-	for i=#children,1,-1 do
+	for i=1,#children do
 		local child = children[i]
 		local x, y = child.baseX, child.baseY
 		
@@ -342,10 +344,12 @@ function PrivateMethods:generateCanvas()
 			x, y = child:getInheritedBasePosition()
 		end
 		
-		if(child:isMaskEnabled()) then
-			child:drawMask(x, y)
-		else
-			child:dx(x, y)
+		if(child:isVisible()) then
+			if(child:isMaskEnabled()) then
+				child:drawMask(x, y)
+			else
+				child:dx(x, y)
+			end
 		end
 	end
 	

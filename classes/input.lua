@@ -188,6 +188,20 @@ end
 
 function DxInput:processTextSelection()
 	if(self.selection.dragging) then
+		if(not self:isMouseOverElement()) then
+			if(self.selection.index.finish > self.selection.index.start) then
+				self:setCaretIndex(self.selection.index.start)
+			else
+				self:setCaretIndex(self.selection.index.finish)
+			end
+			
+			guiSetProperty(self.guiElement, "SelectionLength", self.selection.length)
+			
+			self.selection.dragging = false
+			
+			return
+		end
+		
 		local sx, sy = guiGetScreenSize()
 		local cx, cy = getCursorPosition()
 		
