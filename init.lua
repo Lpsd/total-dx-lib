@@ -44,7 +44,7 @@ function init()
 		radiobutton2:setParent(window)	
 		radiobutton2:setCentered(true)
 		
-		local slider = DxSlider:new(75, 240, 100, 35)
+		local slider = DxSlider:new(75, 240, 100, 35,98)
 		slider:setParent(window)
 		slider:setCentered(true)
 

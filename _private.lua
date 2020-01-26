@@ -98,10 +98,10 @@ end
 function PrivateMethods:drawBounds()
 	if(self:getProperty("draw_bounds")) then
 		local bounds = self.bounds
-		dxDrawLine(self.x + bounds.min.x, self.y + bounds.min.y, self.x + bounds.max.x, self.y + bounds.min.y, tocolor(255, 0, 0, 255),2)
-		dxDrawLine(self.x + bounds.min.x, self.y + bounds.min.y, self.x + bounds.min.x, self.y + bounds.max.y, tocolor(255, 0, 0, 255),2)
-		dxDrawLine(self.x + bounds.max.x, self.y + bounds.min.y, self.x + bounds.max.x, self.y + bounds.max.y, tocolor(255, 0, 0, 255),2)
-		dxDrawLine(self.x + bounds.min.x, self.y + bounds.max.y, self.x + bounds.max.x, self.y + bounds.max.y, tocolor(255, 0, 0, 255),2)
+		dxDrawLine(self.x + bounds.min.x, self.y + bounds.min.y, self.x + bounds.max.x, self.y + bounds.min.y, tocolor(0, 255, 0, 150),2)
+		dxDrawLine(self.x + bounds.min.x, self.y + bounds.min.y, self.x + bounds.min.x, self.y + bounds.max.y, tocolor(0, 255, 0, 150),2)
+		dxDrawLine(self.x + bounds.max.x, self.y + bounds.min.y, self.x + bounds.max.x, self.y + bounds.max.y, tocolor(0, 255, 0, 150),2)
+		dxDrawLine(self.x + bounds.min.x, self.y + bounds.max.y, self.x + bounds.max.x, self.y + bounds.max.y, tocolor(0, 255, 0, 150),2)
 	end
 end
 
@@ -382,7 +382,7 @@ function PrivateMethods:draw_internal(children)
 			end
 			
 			if(#children > 0) then
-				callPrivateMethod(self, "draw_internal",	child:getChildren())
+				callPrivateMethod(self, "draw_internal", child:getChildren())
 			end			
 		end
 	end

@@ -3,8 +3,6 @@ DxSlider = inherit(DxElement)
 function DxSlider:constructor(x, y, width, height, progress)	
 	self.type = "dx-slider"
 	
-	self.progress = tonumber(progress) or 25
-	
 	local sliderHeight = math.max(1, (self.height / 4))
 	
 	self.slider = {
@@ -36,8 +34,9 @@ function DxSlider:constructor(x, y, width, height, progress)
 	self.handle.element:setProperty("allow_drag_x", true)
 	self.handle.element:setCentered(nil, true)
 	
+	self:setProgress(tonumber(progress) or 0)
+	
 	self:addRenderFunction(self.updateProgress, true)
-	self:updateProgress()
 end
 
 function DxSlider:dx(x, y)
@@ -59,4 +58,8 @@ end
 
 function DxSlider:getProgress()
 	return ((self.width) * (self.handle.element.baseX / (100 - self.handle.element.width)))
+end
+
+function DxSlider:setProgress(progress)
+	self.handle.element.baseX  = remap(math.clamp(progress, 0, 100), 0, 100, 0, (100 - self.handle.element.width))
 end
