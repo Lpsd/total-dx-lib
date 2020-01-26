@@ -21,86 +21,8 @@ function remap(num, oldMin, oldMax, newMin, newMax)
 	return (((num - oldMin) * (newMax - newMin)) / (oldMax - oldMin)) + newMin
 end
 
-function createCircleTexture(width, height, color, padding)
-	if(not tonumber(width)) or (not tonumber(height)) then
-		return false
-	end
-	
-	color = color or tocolor(255, 255, 255, 255)
-	
-	padding = padding and math.max(padding, 2) or 2
-	
-	local r, g, b, a = decimalToRGBA(color)
-	
-	local color = {
-		r = r,
-		g = g,
-		b = b,
-		a = a
-	}
-	
-	local texture = dxCreateTexture(width, height, "argb", "clamp")
-	
-	local pixels = dxGetTexturePixels(texture)
-	
-	local radius = (width / 2)
-	
-	if(height < width) then
-		radius = (height / 2)
-	end
-	
-	radius = radius - padding
-	
-	for r=radius, 0, -1 do
-		local alpha = 255
-		
-		for i=0, 360, 0.1 do
-			local angle = i
-
-			local x = (r * math.cos(angle * math.pi / 180)) + radius + padding
-			local y = (r * math.sin(angle * math.pi / 180)) + radius + padding
-			
-			if(r > radius-2) then
-				alpha = 125
-				
-				if(angle < 90) or (angle > 270) then
-					x = x - 0.5
-				else
-					x = x + 0.5
-				end
-				
-				if(angle < 180) then
-					y = y - 0.5
-				else
-					y = y + 0.5
-				end						
-			end	
-
-			
-			if(r == radius) then
-				alpha = 50
-				
-				if(angle < 90) or (angle > 270) then
-					x = x - 0.75
-				else
-					x = x + 0.75
-				end
-				
-				if(angle < 180) then
-					y = y - 0.75
-				else
-					y = y + 0.75
-				end
-			end			
-			
-
-			dxSetPixelColor(pixels, x, y, color.r, color.g, color.b, alpha)
-		end
-	end	
-	
-	dxSetTexturePixels(texture, pixels)	
-		
-	return texture		
+function math.clamp(value, low, high)
+    return math.max(low, math.min(value, high))
 end
 
 function createCircleMask(width, height, padding)
@@ -188,4 +110,26 @@ function string.random(length)
 	end
 	
 	return ""
+end
+
+-- Save copied tables in `copies`, indexed by original table.
+function deepcopy(orig, copies)
+    copies = copies or {}
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        if copies[orig] then
+            copy = copies[orig]
+        else
+            copy = {}
+            copies[orig] = copy
+            for orig_key, orig_value in next, orig, nil do
+                copy[deepcopy(orig_key, copies)] = deepcopy(orig_value, copies)
+            end
+            setmetatable(copy, deepcopy(getmetatable(orig), copies))
+        end
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
 end

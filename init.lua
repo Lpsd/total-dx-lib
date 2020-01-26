@@ -8,6 +8,19 @@ DxInfo = {
 	draggingElement = false
 }
 
+DxProperties = {
+	["allow_drag_x"] = false,
+	["allow_drag_y"] = false,
+	["force_in_bounds"] = true,
+	["drag_preview"] = false,
+	["child_dragging"] = true,
+	["ignore_window_bounds"] = false,
+	["obstruct"] = true,
+	["hover_enabled"] = true,
+	["click_ordering"] = false,
+	["draw_bounds"] = true
+}
+
 function init()	
 	--Load all styles
 	getAllStyles()
@@ -30,6 +43,13 @@ function init()
 		local radiobutton2 = DxRadioButton:new(75, 180, 100, 35, "Option 2")
 		radiobutton2:setParent(window)	
 		radiobutton2:setCentered(true)
+		
+		local slider = DxSlider:new(75, 240, 100, 35)
+		slider:setParent(window)
+		slider:setCentered(true)
+
+		local circle = DxCircle:new(100, 100, 250, 250)
+		circle:setColor(15, 190, 250)	
 	end
 end
 addEventHandler("onClientResourceStart", resourceRoot, init)

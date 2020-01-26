@@ -3,15 +3,60 @@ DxCircle = inherit(DxElement)
 function DxCircle:constructor(x, y, width, height)	
 	self.type = "dx-circle"
 	
-	self.circleTexture = createCircleTexture(self.width, self.height, tocolor(255,255,255), 0)
-end
+	self.shaderText = [[
+		float antiAliased = 0.005;
+		float primaryColor = float4(255, 255, 255, 255);
 
-function DxCircle:dx(x, y)
-	x, y = x or self.x, y or self.y
-	dxDrawImage(x, y, self.width, self.height, self.circleTexture)
+		float4 AntiAliasedCircle(float2 tex:TEXCOORD0):COLOR0
+		{
+			float radius = distance(tex,0.5);
+			
+			float4 color = primaryColor;
+			color.a = 1-(radius-0.5+antiAliased/2)/antiAliased;
+			
+			return color;
+		}
+
+		technique DrawCircle
+		{
+			pass P0
+			{
+				PixelShader = compile ps_2_0 AntiAliasedCircle();
+			}
+		}
+	]]
+	
+	self.shader = dxCreateShader(self.shaderText)
+	
+	self:updateValues()	
 end
 
 -- **************************************************************************
+
+function DxCircle:dx(x, y)
+	x, y = x or self.x, y or self.y
+	dxDrawImage(x, y, self.width, self.height, self.shader, 0, 0, 0, tocolor(self.color.r, self.color.g, self.color.b, self.color.a))
+end
+
+-- **************************************************************************
+
+function DxCircle:updateValues()
+	self.radius = 0.49
+	
+	dxSetShaderValue(self.shader, "primaryColor", {remap(self.color.r, 0, 255, 0, 1), remap(self.color.g, 0, 255, 0, 1), remap(self.color.b, 0, 255, 0, 1), remap(self.color.a, 0, 255, 0, 1)})
+end
+
+-- **************************************************************************
+
+function DxCircle:setSize(width, height)
+	width, height = tonumber(width), tonumber(height)
+	
+	self.width, self.height = width and width or self.width, height and height or self.height
+	
+	self:updateValues()
+
+	return true
+end
 
 function DxCircle:setColor(r, g, b, a)
 	r, g, b, a = tonumber(r), tonumber(g), tonumber(b), tonumber(a)
@@ -39,11 +84,9 @@ function DxCircle:setColor(r, g, b, a)
 		self.color = self.primaryColor
 	end
 	
-	if(self.circleTexture and isElement(self.circleTexture)) then
-		destroyElement(self.circleTexture)
-	end
-	
-	self.circleTexture = createCircleTexture(self.width, self.height, tocolor(self.primaryColor.r, self.primaryColor.g, self.primaryColor.b, self.primaryColor.a), 0)
+	self:updateValues()
 	
 	return true
 end
+
+-- **************************************************************************

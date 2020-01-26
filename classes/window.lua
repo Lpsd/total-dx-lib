@@ -54,7 +54,9 @@ function DxWindow:constructor(x, y, width, height, titlebarText)
 	
 	self:addRenderFunction(self.update)
 	
-	self:setProperty("allow_drag", true)
+	self:setProperty("allow_drag_x", true)
+	self:setProperty("allow_drag_y", true)
+	self:setProperty("click_ordering", true)
 	self:setDragArea(nil, nil, nil, self.titlebar.height)
 
 	self:createCanvas()

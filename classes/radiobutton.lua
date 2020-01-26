@@ -8,8 +8,8 @@ function DxRadioButton:constructor(x, y, width, height, text, selected)
 	self.textColor = getStyleSetting("radiobutton", "text_color")
 	
 	self.radiobutton = {
-		width = math.min(height, 26),
-		height = math.min(height, 26),
+		width = math.min(height, 22),
+		height = math.min(height, 22),
 		selected = selected and true or false,
 		background_color = getStyleSetting("radiobutton", "button_background_color"),
 		selected_color = getStyleSetting("radiobutton", "button_selected_color")
@@ -17,13 +17,13 @@ function DxRadioButton:constructor(x, y, width, height, text, selected)
 	
 	local checkX, checkY = self:getRadioButtonBounds()
 	
-	self.radiobutton.backgroundElement = DxCircle:new(checkX-self.x, checkY-self.y, self.radiobutton.height, self.radiobutton.height)
+	self.radiobutton.backgroundElement = DxCircle:new(checkX-self.x, checkY-self.y, self.radiobutton.height, self.radiobutton.height, 2)
 	self.radiobutton.backgroundElement:setParent(self)
 	self.radiobutton.backgroundElement:setColor(self.radiobutton.background_color.r, self.radiobutton.background_color.g, self.radiobutton.background_color.b, self.radiobutton.background_color.a)
 	
-	self.radiobutton.selected_padding = self.radiobutton.width / 3
+	self.radiobutton.selected_padding = self.radiobutton.width / 2
 	
-	self.radiobutton.selectedElement = DxCircle:new((self.radiobutton.selected_padding/2), (self.radiobutton.selected_padding/2), self.radiobutton.height - self.radiobutton.selected_padding, self.radiobutton.height - self.radiobutton.selected_padding)
+	self.radiobutton.selectedElement = DxCircle:new((self.radiobutton.selected_padding/2), (self.radiobutton.selected_padding/2), self.radiobutton.height - self.radiobutton.selected_padding, self.radiobutton.height - self.radiobutton.selected_padding, 0)
 	self.radiobutton.selectedElement:setParent(self.radiobutton.backgroundElement)
 	self.radiobutton.selectedElement:setColor(self.radiobutton.selected_color.r, self.radiobutton.selected_color.g, self.radiobutton.selected_color.b, self.radiobutton.selected_color.a)
 	
@@ -33,6 +33,7 @@ function DxRadioButton:constructor(x, y, width, height, text, selected)
 		end
 	end
 	
+	self.radiobutton.backgroundElement:addClickFunction(self.radiobutton.fToggleSelectedState)
 	self.radiobutton.selectedElement:addClickFunction(self.radiobutton.fToggleSelectedState)
 	self:addClickFunction(self.radiobutton.fToggleSelectedState)
 

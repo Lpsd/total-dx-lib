@@ -95,6 +95,16 @@ function PrivateMethods:drawCanvas()
 	end
 end
 
+function PrivateMethods:drawBounds()
+	if(self:getProperty("draw_bounds")) then
+		local bounds = self.bounds
+		dxDrawLine(self.x + bounds.min.x, self.y + bounds.min.y, self.x + bounds.max.x, self.y + bounds.min.y, tocolor(255, 0, 0, 255),2)
+		dxDrawLine(self.x + bounds.min.x, self.y + bounds.min.y, self.x + bounds.min.x, self.y + bounds.max.y, tocolor(255, 0, 0, 255),2)
+		dxDrawLine(self.x + bounds.max.x, self.y + bounds.min.y, self.x + bounds.max.x, self.y + bounds.max.y, tocolor(255, 0, 0, 255),2)
+		dxDrawLine(self.x + bounds.min.x, self.y + bounds.max.y, self.x + bounds.max.x, self.y + bounds.max.y, tocolor(255, 0, 0, 255),2)
+	end
+end
+
 -- *************************************************
 
 function PrivateMethods:updatePreviousDimensions()
@@ -135,7 +145,13 @@ function PrivateMethods:drag()
 		end
 		
 		if(self:hasParent()) then
-			self.baseX, self.baseY = self.baseX + (cx - self.dragInitialX) - self.x, self.baseY + (cy - self.dragInitialY) - self.y
+			if(self:getProperty("allow_drag_x")) then
+				self.baseX = self.baseX + (cx - self.dragInitialX) - self.x
+			end
+			
+			if(self:getProperty("allow_drag_y")) then
+				self.baseY = self.baseY + (cy - self.dragInitialY) - self.y
+			end
 			
 			local rootElement = self.parent:getRootElement()
 			local baseOffsetX, baseOffsetY = self.baseX, self.baseY
@@ -147,20 +163,28 @@ function PrivateMethods:drag()
 				end
 			end
 			
-			if((rootElement.x + baseOffsetX + maxX) > SCREEN_WIDTH) then
-				self.baseX = SCREEN_WIDTH - rootElement.x - maxX - (baseOffsetX-self.baseX)
+			if(self:getProperty("allow_drag_x")) then
+				if((rootElement.x + baseOffsetX + maxX) > SCREEN_WIDTH) then
+					self.baseX = SCREEN_WIDTH - rootElement.x - maxX - (baseOffsetX-self.baseX)
+				end
 			end
 			
-			if((rootElement.y + baseOffsetY + maxY) > SCREEN_HEIGHT) then
-				self.baseY = SCREEN_HEIGHT - rootElement.y - maxY - (baseOffsetY-self.baseY)
-			end		
-			
-			if((self.baseX + minX) < -(self.parent and self.parent.x or 0)) then
-				self.baseX = -(self.parent and self.parent.x or 0) - minX  
+			if(self:getProperty("allow_drag_y")) then
+				if((rootElement.y + baseOffsetY + maxY) > SCREEN_HEIGHT) then
+					self.baseY = SCREEN_HEIGHT - rootElement.y - maxY - (baseOffsetY-self.baseY)
+				end
 			end
 			
-			if((self.baseY + minY) < -(self.parent and self.parent.y or 0)) then
-				self.baseY = -(self.parent and self.parent.y or 0) - minY 
+			if(self:getProperty("allow_drag_x")) then
+				if((self.baseX + minX) < -(self.parent and self.parent.x or 0)) then
+					self.baseX = -(self.parent and self.parent.x or 0) - minX  
+				end
+			end
+			
+			if(self:getProperty("allow_drag_y")) then
+				if((self.baseY + minY) < -(self.parent and self.parent.y or 0)) then
+					self.baseY = -(self.parent and self.parent.y or 0) - minY 
+				end
 			end
 		else
 			self.x, self.y = cx - self.dragInitialX, cy - self.dragInitialY
@@ -190,20 +214,21 @@ function PrivateMethods:click(button, state, x, y)
 	end
 
 	if(button == "left") and (state == "down") then	
+		if(self:getProperty("click_ordering")) then
+			self:bringToFront()
+		end
 		if(self:hasParent()) then
 			if(self.parent:getProperty("child_dragging")) then
-				if(self:getProperty("allow_drag")) then
+				if(self:getProperty("allow_drag_x") or self:getProperty("allow_drag_y")) then
 					if(isMouseInPosition(self.x + self.dragArea.x, self.y + self.dragArea.y, self.dragArea.width, self.dragArea.height)) then
-						self:bringToFront()
 						self.dragging = true
 						DxInfo.draggingElement = self
 					end		
 				end
 			end
 		else
-			if(self:getProperty("allow_drag")) then
+			if(self:getProperty("allow_drag_x") or self:getProperty("allow_drag_y")) then
 				if(isMouseInPosition(self.x + self.dragArea.x, self.y + self.dragArea.y, self.dragArea.width, self.dragArea.height)) then
-					self:bringToFront()
 					self.dragging = true
 					DxInfo.draggingElement = self
 				end	
@@ -332,11 +357,16 @@ function PrivateMethods:generateCanvas()
 	end	
 	
 	dxSetRenderTarget(self:getCanvas(), true)
-	dxSetBlendMode("add")
 	
-	local children = self:getInheritedChildren()
+	local children = self:getChildren()
 	
-	for i=1,#children do
+	callPrivateMethod(self, "draw_internal", children)
+
+	dxSetRenderTarget()
+end
+
+function PrivateMethods:draw_internal(children)
+	for i=#children, 1, -1 do
 		local child = children[i]
 		local x, y = child.baseX, child.baseY
 		
@@ -350,12 +380,14 @@ function PrivateMethods:generateCanvas()
 			else
 				child:dx(x, y)
 			end
+			
+			if(#children > 0) then
+				callPrivateMethod(self, "draw_internal",	child:getChildren())
+			end			
 		end
 	end
-	
-	dxSetBlendMode()
-	dxSetRenderTarget()
 end
+
 
 -- *************************************************
 

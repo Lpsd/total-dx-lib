@@ -7,7 +7,7 @@
 	</general>
 	
 	<window>
-		<style name="titlebar_color" r=36 g=36 b=36 a=255 />
+		<style name="titlebar_color" r=44 g=44 b=44 a=255 />
 		<style name="close_button_bg_color" r=250 g=55 b=55 a=255 />
 	</window>
 	
@@ -25,7 +25,7 @@
 	<button>
 		<style name="primary_color" r=66 g=66 b=66 a=255 />
 		<style name="text_color" r=255 g=255 b=255 a=255 />
-		<style name="hover_color" r=66 g=66 b=66 a=200 />
+		<style name="hover_color" r=66 g=66 b=66 a=250 />
 	</button>
 	
 	<checkbox>
@@ -40,4 +40,8 @@
 		<style name="text_color" r=255 g=255 b=255 a=255 />
 	</radiobutton>	
 	
+	<slider>
+		<style name="handle_color" r=44 g=44 b=44 a=255 />
+		<style name="slider_color" r=66 g=66 b=66 a=255 />
+	</slider>
 </elements>

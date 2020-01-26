@@ -83,15 +83,7 @@ function DxElement:virtual_constructor(x, y, width, height)
 	
 	self.clickFunctions = {}
 	
-	self.properties = {
-		["allow_drag"] = false,
-		["force_in_bounds"] = true,
-		["drag_preview"] = false,
-		["child_dragging"] = true,
-		["ignore_window_bounds"] = false,
-		["obstruct"] = true,
-		["hover_enabled"] = true
-	}
+	self.properties = deepcopy(DxProperties)
 	
 	self.bounds = {
 		min = {
@@ -141,12 +133,13 @@ function DxElement:virtual_constructor(x, y, width, height)
 	self:addRenderFunction(getPrivateMethod(self, "drag"), true)
 	
 	self:addRenderFunction(getPrivateMethod(self, "updateInheritedBounds"))
-	self:addRenderFunction(getPrivateMethod(self, "forceInBounds"))
+	self:addRenderFunction(getPrivateMethod(self, "forceInBounds"), true)
 	
 	self:addRenderFunction(getPrivateMethod(self, "updateCachedTextures"))
 	
 	self:addRenderFunction(getPrivateMethod(self, "draw"))
 	self:addRenderFunction(getPrivateMethod(self, "drawCanvas"))
+	self:addRenderFunction(getPrivateMethod(self, "drawBounds"))
 	
 	self:addRenderFunction(getPrivateMethod(self, "updatePreviousDimensions"))
 	
@@ -399,19 +392,10 @@ function DxElement:isMouseOverElement()
 end
 
 function DxElement:isObstructed(cursorX, cursorY)
-	for i, element in ipairs(DxElements) do
-		if(self:isObstructedByElement(cursorX, cursorY, element)) then
-			return true
-		end
-	end
-	return false
+	return self:getObstructingElement(cursorX, cursorY) and true or false
 end
 
 function DxElement:isObstructedByElement(cursorX, cursorY, element)
-	return self:getObstructingElement(cursorX, cursorY, element) and true or false
-end
-
-function DxElement:getObstructingElement(cursorX, cursorY, element)
 	if(not element:getProperty("obstruct")) then
 		return false
 	end
@@ -421,12 +405,25 @@ function DxElement:getObstructingElement(cursorX, cursorY, element)
 			if(cursorX >= element.x and cursorX <= element.x + element.width and cursorY >= element.y and cursorY <= element.y + element.height) then
 				if(self:isChild(element)) then
 					return element
+				elseif(element:getParent() == self:getParent()) then					
+					if(element.index < self.index) then
+						return element
+					end
 				else
-					if(element:getRootElement().index < self:getRootElement().index) then
+					if(self:getRootElement().index > element:getRootElement().index) then
 						return element
 					end
 				end
 			end
+		end
+	end
+	return false
+end
+
+function DxElement:getObstructingElement(cursorX, cursorY)
+	for i, element in ipairs(DxElements) do
+		if(self:isObstructedByElement(cursorX, cursorY, element)) then
+			return element
 		end
 	end
 	return false
@@ -471,6 +468,10 @@ function DxElement:getInheritedBounds()
 	return bounds.min.x, bounds.min.y, bounds.max.x, bounds.max.y
 end
 
+function DxElement:getBounds(relative)
+	return (not relative and self.x or 0), (not relative and self.y or 0), (not relative and self.x + self.width or self.width), (not relative and self.y + self.height or self.height)
+end
+
 -- **************************************************************************
 
 function DxElement:isParent(element)
@@ -497,9 +498,7 @@ function DxElement:setParent(parent)
 	self.parent = parent
 	self:setIndex(1)
 	
-	-- callPrivateMethod(self, "updateInheritedBounds")
-	-- callPrivateMethod(self, "forceInBounds")
-	-- callPrivateMethod(self, "prerender")
+	callPrivateMethod(self, "updateInheritedBounds")
 	
 	return true	
 end
@@ -531,9 +530,6 @@ end
 -- **************************************************************************
 
 function DxElement:isChild(element)
-	if(self:isInheritedChild(element)) then
-		return true
-	end
 	for i,e in ipairs(self.children) do
 		if(element == e) then
 			return true
@@ -542,16 +538,24 @@ function DxElement:isChild(element)
 	return false
 end
 
-function DxElement:getTopLevelChild(element)
-	local element
+function DxElement:getTopLevelChildren(parent)	
+	parent = parent or self:getParent()
 	
-	for i,e in ipairs(self:getInheritedParents()) do
-		if(not e:isRootElement()) then
-			element = e
-		end
+	if(not parent) then
+		return self
 	end
 	
-	return element or self
+	local elements = {}	
+	
+	if(not parent:hasParent()) then
+		for i, child in ipairs(parent:getChildren()) do
+			table.insert(elements, element)
+		end
+		
+		return elements
+	end
+	
+	return self:getTopLevelChildren(parent:getParent())
 end
 
 -- **************************************************************************
@@ -574,9 +578,17 @@ end
 
 -- **************************************************************************
 
-function DxElement:getRootElement()
+function DxElement:getRootElement(hasCanvas)
 	if(self:hasParent()) then
-		return self.parent:getRootElement()
+		if(hasCanvas) then
+			if(self.parent:hasCanvas()) then
+				return self.parent:getRootElement(hasCanvas)
+			else
+				return self
+			end
+		else
+			return self.parent:getRootElement()
+		end
 	end
 	return self
 end
@@ -587,6 +599,13 @@ function DxElement:isRootElement()
 	end
 	
 	return false
+end
+
+function DxElement:getRootWithCanvas()
+	if(self:hasParent()) then
+		return self.parent:getRootElement()
+	end
+	return self
 end
 
 -- **************************************************************************
@@ -697,7 +716,7 @@ function DxElement:setAlpha(alpha)
 		return false
 	end
 	
-	self.alpha = tonumber(alpha)
+	self.color.a = tonumber(alpha)
 	
 	return true
 end
@@ -820,6 +839,10 @@ function DxElement:setPosition(x, y)
 	
 	self.baseX, self.baseY = x and x or self.baseX, y and y or self.baseY
 	
+	if(not self:hasParent()) then
+		self.x, self.y = self.baseX, self.baseY
+	end
+	
 	return true
 end
 
@@ -924,12 +947,8 @@ function DxElement:isTerminated()
 		return true
 	end
 	
-	if(rootElement.terminated) then
-		return true
-	end
-	
-	for i, child in ipairs(self:getInheritedChildren()) do
-		if(child.terminated) then
+	for i, parent in ipairs(self:getInheritedParents()) do
+		if(parent.terminated) then
 			return true
 		end
 	end
@@ -959,7 +978,10 @@ function DxElement:setIndex(index)
 			callPrivateMethod(element, "refreshIndex")
 			callPrivateMethod(element, "refreshEventHandlers")
 			
-			for i, child in ipairs(element:getInheritedChildren()) do
+			local children = element:getInheritedChildren()
+			
+			for i=1, #children do
+				local child = children[i]
 				callPrivateMethod(child, "refreshIndex")
 				callPrivateMethod(child, "refreshEventHandlers")
 			end
@@ -1020,32 +1042,15 @@ end
 -- **************************************************************************
 
 function DxElement:setCentered(horizontal, vertical)
-	local bounds = {
-		min = {
-			x = 0,
-			y = 0
-		},
-		max = {
-			x = self.width,
-			y = self.height
-		}
-	}
-	
-	if(self:hasParent()) then
-		bounds.min.x, bounds.min.y, bounds.max.x, bounds.max.y = self:getParent():getInheritedBounds()
-	end
+	local width, height = self:hasParent() and self:getParent().width or SCREEN_WIDTH, self:hasParent() and self:getParent().height or SCREEN_HEIGHT
 	
 	if(horizontal) then
-		local width = ((bounds.min.x < 0) and (-bounds.min.x) or bounds.min.x) + bounds.max.x
-		
 		local x = (width / 2) - (self.width / 2)
 		
 		self:setPosition(x)
 	end
 	
-	if(vertical) then
-		local height = ((bounds.min.y < 0) and (-bounds.min.y) or bounds.min.y) + bounds.max.y
-		
+	if(vertical) then	
 		local y = (height / 2) - (self.height / 2)
 		
 		self:setPosition(nil, y)

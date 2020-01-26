@@ -12,6 +12,7 @@
 	<script src="style.lua" type="client" />
 	
 	<script src="_private.lua" type="client" />
+	<script src="functions.lua" type="client" />
 	
 	<!-- Element Classes -->
 	<script src="classes/element.lua" type="client" />	
@@ -24,6 +25,7 @@
 	<script src="classes/button.lua" type="client" />
 	<script src="classes/checkbox.lua" type="client" />
 	<script src="classes/radiobutton.lua" type="client" />
+	<script src="classes/slider.lua" type="client" />
 	
 	<!-- Assets -->
 	<file src="assets/images/64x64.png" />
