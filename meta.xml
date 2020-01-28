@@ -47,6 +47,7 @@
 	
 	<!-- Exports -->
 	<export function="dxLoadFunctions" type="client" />
+	<export function="dxDestroy" type="client" />
 	
 	<export function="dx_iselement" type="client" />
 	<export function="dx_callmethod" type="client" />

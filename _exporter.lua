@@ -14,7 +14,9 @@ function dxInitializeExporter()
 		dxOOPClass.resourceName = "]] .. RESOURCE_NAME .. [["
 		dxOOPClass.resource = getResourceFromName(dxOOPClass.resourceName)
 		
-		dxOOPClass.metatable = {
+		dxOOPClass.elements = {}
+		
+		dxOOPClass.mt = {
 			__index = function(obj, key)
 				return function(self, ...)
 					local funcName = "dx" .. string.gsub(key, "^%l", string.upper)
@@ -22,6 +24,24 @@ function dxInitializeExporter()
 				end
 			end
 		}
+		
+		dxOOPClass.init = function()
+			local resource = getResourceFromName(dxOOPClass.resourceName)
+			
+			if(not resource) then
+				return
+			end
+			
+			dxOOPClass.resource = resource
+		end
+		addEventHandler("onClientResourceStart", root, dxOOPClass.init)
+		
+		dxOOPClass.exit = function()
+			for i, element in ipairs(dxOOPClass.elements) do
+				call(dxOOPClass.resource, "dxDestroy", element.uid)
+			end
+		end
+		addEventHandler("onClientResourceStop", resourceRoot, dxOOPClass.exit)
 	]]
 	
 	
@@ -47,7 +67,9 @@ function dxInitializeExporter()
 						function ]] .. funcName .. [[(...)
 							local element = exports.]] .. RESOURCE_NAME .. ":" .. funcName .. [[(...)
 							
-							setmetatable(element, dxOOPClass.metatable)
+							dxOOPClass.elements[#dxOOPClass.elements + 1] = element
+							
+							setmetatable(element, dxOOPClass.mt)
 							
 							return element
 						end 

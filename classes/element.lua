@@ -37,6 +37,11 @@ function DxElement:delete(...)
 	return delete(self, ...)
 end
 
+--Alias
+function DxElement:destroy(...)
+	return self:delete(...)
+end
+
 -- **************************************************************************
 
 function DxElement:virtual_constructor(x, y, width, height)

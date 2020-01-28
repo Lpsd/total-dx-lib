@@ -37,12 +37,12 @@ function dx_callmethod(element, methodName, ...) -- dx-element, method name, arg
 	return element[methodName](element, ...)
 end
 
--- **************************************************************************
--- Initialization
--- **************************************************************************
-
-function dxCreateWindow(...)
-	local element = DxWindow:new(...)
+function dx_createmethod(classType, ...)
+	if(not _G[classType]) then
+		return false
+	end
+	
+	local element = _G[classType]:new(...)
 	
 	if(not element) then
 		return false
@@ -53,40 +53,48 @@ function dxCreateWindow(...)
 	return element
 end
 
+-- **************************************************************************
+-- Initialization
+-- **************************************************************************
+
+function dxCreateWindow(...)
+	return dx_createmethod("DxWindow", ...)
+end
+
 function dxCreateButton(...)
-	return DxButton:new(...)
+	return dx_createmethod("DxButton", ...)
 end
 
 function dxCreateInput(...)
-	return DxInput:new(...)
+	return dx_createmethod("DxInput", ...)
 end
 
 function dxCreateText(...)
-	return DxText:new(...)
+	return dx_createmethod("DxText", ...)
 end
 
 function dxCreateSlider(...)
-	return DxSlider:new(...)
+	return dx_createmethod("DxSlider", ...)
 end
 
 function dxCreateImage(...)
-	return DxImage:new(...)
+	return dx_createmethod("DxImage", ...)
 end
 
 function dxCreateColor(...)
-	return DxBlank:new(...)
+	return dx_createmethod("DxBlank", ...)
 end
 
 function dxCreateCheckbox(...)
-	return DxCheckbox:new(...)
+	return dx_createmethod("DxCheckbox", ...)
 end
 
 function dxCreateRadioButton(...)
-	return DxRadioButton:new(...)
+	return dx_createmethod("DxRadioButton", ...)
 end
 
 function dxCreateCircle(...)
-	return DxCircle:new(...)
+	return dx_createmethod("DxCircle", ...)
 end
 
 -- **************************************************************************
@@ -447,4 +455,11 @@ end
 
 function dxGetTopLevelChildren(element)
 	return dx_callmethod(element, "getTopLevelChildren")
+end
+
+-- **************************************************************************
+-- Destruction
+-- **************************************************************************
+function dxDestroy(element)
+	return dx_callmethod(element, "delete")
 end
