@@ -9,12 +9,12 @@ function dxInitializeExporter()
 	end
 	
 	funcInjectCode = [[
-		local dxOOPClass = {
-			resourceName = "]] .. RESOURCE_NAME .. [[",
-			resource = getResourceFromName("]] .. RESOURCE_NAME .. [[")
-		}
+		local dxOOPClass = {}
 		
-		local mt = {
+		dxOOPClass.resourceName = "]] .. RESOURCE_NAME .. [["
+		dxOOPClass.resource = getResourceFromName(dxOOPClass.resourceName)
+		
+		dxOOPClass.metatable = {
 			__index = function(obj, key)
 				return function(self, ...)
 					local funcName = "dx" .. string.gsub(key, "^%l", string.upper)
@@ -47,7 +47,7 @@ function dxInitializeExporter()
 						function ]] .. funcName .. [[(...)
 							local element = exports.]] .. RESOURCE_NAME .. ":" .. funcName .. [[(...)
 							
-							setmetatable(element, mt)
+							setmetatable(element, dxOOPClass.metatable)
 							
 							return element
 						end 
