@@ -44,6 +44,11 @@ function DxCircle:updateValues()
 	self.radius = 0.49
 	
 	dxSetShaderValue(self.shader, "primaryColor", {remap(self.color.r, 0, 255, 0, 1), remap(self.color.g, 0, 255, 0, 1), remap(self.color.b, 0, 255, 0, 1), remap(self.color.a, 0, 255, 0, 1)})
+	
+	
+	if(self.width < 100) then
+		dxSetShaderValue(self.shader, "antiAliased", 0.075)
+	end	
 end
 
 -- **************************************************************************

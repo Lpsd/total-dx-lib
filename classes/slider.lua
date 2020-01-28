@@ -15,11 +15,11 @@ function DxSlider:constructor(x, y, width, height, progress)
 	self.slider.element:setColor(sliderColor.r, sliderColor.g, sliderColor.b, sliderColor.a)	
 	
 	local handleColor = getStyleSetting("slider", "handle_color")
-	local handleSize = (height / 1.4)
+	local handleSize = (height / 1.5)
 	handleSize = (handleSize % 2 == 0) and handleSize or (handleSize + 1)
 	
 	self.handle = {
-		element = DxCircle:new(0, 0, handleSize, handleSize,0),
+		element = DxCircle:new(0, 0, handleSize, handleSize),
 		color = {
 			r = handleColor.r,
 			g = handleColor.g,
@@ -44,16 +44,7 @@ function DxSlider:dx(x, y)
 end
 
 function DxSlider:updateProgress()
-	if(self.allowUpdate) then
-		self.progress = self:getProgress()
-		self.allowUpdate = false
-	end
-		
-	if(self.handle.element.dragging) then
-		if(not self.allowUpdate) then
-			self.allowUpdate = true
-		end
-	end
+	self.progress = self:getProgress()
 end
 
 function DxSlider:getProgress()
