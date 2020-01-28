@@ -193,6 +193,12 @@ function PrivateMethods:drag()
 end
 
 function PrivateMethods:click(button, state, x, y)
+	if(state == "up") then
+		for i, func in ipairs(self.clickFunctions) do
+			func(button, state, x, y)
+		end	
+	end
+	
 	if(button == "left") and (state == "up") then	
 		if(DxInfo.draggingElement == self) then
 			DxInfo.draggingElement = false

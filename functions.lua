@@ -5,7 +5,7 @@ function dx_iselement(element)
 	if(not element) then
 		return false
 	end
-	
+
 	if(type(element) ~= "table") then
 		return false
 	end
@@ -18,17 +18,21 @@ function dx_iselement(element)
 		return false
 	end
 	
-	if(not element[methodName]) then
-		return false
-	end
-	
 	return true
 end
 
 function dx_callmethod(element, methodName, ...) -- dx-element, method name, args
+	if(type(element) == "string") then
+		element = DxHostedElements[element]
+	end
+	
 	if(not dx_iselement(element)) then
 		return false
 	end
+	
+	if(not element[methodName]) then
+		return false
+	end	
 	
 	return element[methodName](element, ...)
 end
@@ -38,7 +42,15 @@ end
 -- **************************************************************************
 
 function dxCreateWindow(...)
-	return DxWindow:new(...)
+	local element = DxWindow:new(...)
+	
+	if(not element) then
+		return false
+	end
+	
+	DxHostedElements[element.uid] = element
+	
+	return element
 end
 
 function dxCreateButton(...)

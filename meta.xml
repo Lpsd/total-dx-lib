@@ -3,14 +3,20 @@
 	<min_mta_version client="1.5.7-9.20288.0" server="1.5.7-9.20164.0" />
 	<oop>true</oop>
 	
+	<file src="meta.xml" />
+	
 	<script src="classlib.lua" type="client" />
 	
 	<script src="init.lua" type="client" />
+	
+	<!-- Examples -->
+	<script src="examples/window.lua" type="client" />
 	
 	<!-- General -->
 	<script src="utils.lua" type="client" />
 	<script src="style.lua" type="client" />
 	
+	<script src="_exporter.lua" type="client" />
 	<script src="_private.lua" type="client" />
 	<script src="functions.lua" type="client" />
 	
@@ -38,4 +44,77 @@
 	
 	<!-- Put your styles here -->
 	<file src="styles/default.xml" />
+	
+	<!-- Exports -->
+	<export function="dxLoadFunctions" type="client" />
+	
+	<export function="dx_iselement" type="client" />
+	<export function="dx_callmethod" type="client" />
+	<export function="dxCreateWindow" type="client" />
+	<export function="dxCreateButton" type="client" />
+	<export function="dxCreateInput" type="client" />
+	<export function="dxCreateText" type="client" />
+	<export function="dxCreateSlider" type="client" />
+	<export function="dxCreateImage" type="client" />
+	<export function="dxCreateColor" type="client" />
+	<export function="dxCreateCheckbox" type="client" />
+	<export function="dxCreateRadioButton" type="client" />
+	<export function="dxCreateCircle" type="client" />
+	<export function="destroyElement" type="client" />
+	<export function="dxSetGlobalProperty" type="client" />
+	<export function="dxGetGlobalProperty" type="client" />
+	<export function="dxSetProperty" type="client" />
+	<export function="dxGetProperty" type="client" />
+	<export function="dxGetTexture" type="client" />
+	<export function="dxGetMaskTexture" type="client" />
+	<export function="dxApplyMask" type="client" />
+	<export function="dxSetMaskEnabled" type="client" />
+	<export function="dxAddRenderFunction" type="client" />
+	<export function="dxRemoveRenderFunction" type="client" />
+	<export function="dxAddClickFunction" type="client" />
+	<export function="dxRemoveClickFunction" type="client" />
+	<export function="dxSetDragArea" type="client" />
+	<export function="isMouseOverDxElement" type="client" />
+	<export function="dxIsObstructed" type="client" />
+	<export function="dxIsObstructedByElement" type="client" />
+	<export function="dxGetObstructingElement" type="client" />
+	<export function="dxGetBounds" type="client" />
+	<export function="dxGetInheritedBounds" type="client" />
+	<export function="dxIsParent" type="client" />
+	<export function="dxSetParent" type="client" />
+	<export function="dxGetParent" type="client" />
+	<export function="dxGetInheritedParents" type="client" />
+	<export function="dxIsChild" type="client" />
+	<export function="dxIsInheritedChild" type="client" />
+	<export function="dxGetChildren" type="client" />
+	<export function="dxGetInheritedChildren" type="client" />
+	<export function="dxGetChildrenByType" type="client" />
+	<export function="dxGetInheritedChildrenByType" type="client" />
+	<export function="dxSetAlpha" type="client" />
+	<export function="dxGetAlpha" type="client" />
+	<export function="dxSetVisible" type="client" />
+	<export function="dxGetVisible" type="client" />
+	<export function="dxSetColor" type="client" />
+	<export function="dxGetColor" type="client" />
+	<export function="dxSetHoverColor" type="client" />
+	<export function="dxGetHoverColor" type="client" />
+	<export function="dxSetTextColor" type="client" />
+	<export function="dxGetTextColor" type="client" />
+	<export function="dxSetPosition" type="client" />
+	<export function="dxGetPosition" type="client" />
+	<export function="dxSetCentered" type="client" />
+	<export function="dxSetSize" type="client" />
+	<export function="dxGetSize" type="client" />
+	<export function="dxSetText" type="client" />
+	<export function="dxGetText" type="client" />
+	<export function="dxBringToFront" type="client" />
+	<export function="dxSendToBack" type="client" />
+	<export function="dxSetIndex" type="client" />
+	<export function="dxGetIndex" type="client" />
+	<export function="dxIsFront" type="client" />
+	<export function="dxGetRootElements" type="client" />
+	<export function="dxGetNonRootElements" type="client" />
+	<export function="dxIsRootElement" type="client" />
+	<export function="dxGetRootElement" type="client" />
+	<export function="dxGetTopLevelChildren" type="client" />	
 </meta>
