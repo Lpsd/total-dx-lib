@@ -22,9 +22,9 @@ function dx_iselement(element)
 end
 
 function dx_callmethod(element, methodName, ...) -- dx-element, method name, args
-	if(type(element) == "string") then
-		element = DxHostedElements[element]
-	end
+	local uid = (type(element) == "table") and element.uid or element
+	
+	element = DxHostedElements[uid]
 	
 	if(not dx_iselement(element)) then
 		return false
