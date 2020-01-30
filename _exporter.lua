@@ -7,7 +7,7 @@ function dxInitializeExporter()
 	if(metaFile) then
 		return false
 	end
-	
+
 	funcInjectCode = [[
 		local dxOOPClass = {}
 		
@@ -16,11 +16,13 @@ function dxInitializeExporter()
 		
 		dxOOPClass.elements = {}
 		
+		dxOOPClass.types = ']] .. toJSON(DxTypes) .. [['
+		dxOOPClass.types = fromJSON(dxOOPClass.types)
+		
 		dxOOPClass.mt = {
 			__index = function(obj, key)
 				return function(self, ...)
-					local funcName = "dx" .. string.gsub(key, "^%l", string.upper)
-					return call(dxOOPClass.resource, funcName, self.uid, ...)
+					return call(dxOOPClass.resource, "dx_callmethod", self.uid, key, ...)
 				end
 			end
 		}
@@ -42,8 +44,21 @@ function dxInitializeExporter()
 			end
 		end
 		addEventHandler("onClientResourceStop", resourceRoot, dxOOPClass.exit)
+		
+		for i, class in ipairs(dxOOPClass.types) do		
+			_G[class] = {
+				new = function(self, ...)
+					local element = call(dxOOPClass.resource, "dx_createelement", class, ...)
+					
+					dxOOPClass.elements[#dxOOPClass.elements + 1] = element
+					
+					setmetatable(element, dxOOPClass.mt)
+					
+					return element					
+				end
+			}
+		end
 	]]
-	
 	
 	metaFile = xmlLoadFile("meta.xml")
 	metaNodes = xmlNodeGetChildren(metaFile)

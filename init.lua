@@ -9,6 +9,22 @@ DxInfo = {
 	draggingElement = false
 }
 
+DxTypes = {
+	"DxElement",
+	"DxBlank",
+	"DxCheckbox",
+	"DxCircle",
+	"DxImage",
+	"DxInput",
+	"DxRadioButton",
+	"DxSlider",
+	"DxText",
+	"DxWindow",
+	"DxButton"
+}
+
+DxMethods = {}
+
 DxProperties = {
 	["allow_drag_x"] = false,
 	["allow_drag_y"] = false,

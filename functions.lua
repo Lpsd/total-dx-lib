@@ -34,10 +34,18 @@ function dx_callmethod(element, methodName, ...) -- dx-element, method name, arg
 		return false
 	end	
 	
-	return element[methodName](element, ...)
+	local args = {...}
+	
+	for i, arg in ipairs(args) do
+		if(type(arg) == "table" and arg.uid) then
+			args[i] = DxHostedElements[arg.uid]
+		end
+	end
+	
+	return element[methodName](element, unpack(args))
 end
 
-function dx_createmethod(classType, ...)
+function dx_createelement(classType, ...)
 	if(not _G[classType]) then
 		return false
 	end
@@ -58,43 +66,43 @@ end
 -- **************************************************************************
 
 function dxCreateWindow(...)
-	return dx_createmethod("DxWindow", ...)
+	return dx_createelement("DxWindow", ...)
 end
 
 function dxCreateButton(...)
-	return dx_createmethod("DxButton", ...)
+	return dx_createelement("DxButton", ...)
 end
 
 function dxCreateInput(...)
-	return dx_createmethod("DxInput", ...)
+	return dx_createelement("DxInput", ...)
 end
 
 function dxCreateText(...)
-	return dx_createmethod("DxText", ...)
+	return dx_createelement("DxText", ...)
 end
 
 function dxCreateSlider(...)
-	return dx_createmethod("DxSlider", ...)
+	return dx_createelement("DxSlider", ...)
 end
 
 function dxCreateImage(...)
-	return dx_createmethod("DxImage", ...)
+	return dx_createelement("DxImage", ...)
 end
 
 function dxCreateColor(...)
-	return dx_createmethod("DxBlank", ...)
+	return dx_createelement("DxBlank", ...)
 end
 
 function dxCreateCheckbox(...)
-	return dx_createmethod("DxCheckbox", ...)
+	return dx_createelement("DxCheckbox", ...)
 end
 
 function dxCreateRadioButton(...)
-	return dx_createmethod("DxRadioButton", ...)
+	return dx_createelement("DxRadioButton", ...)
 end
 
 function dxCreateCircle(...)
-	return dx_createmethod("DxCircle", ...)
+	return dx_createelement("DxCircle", ...)
 end
 
 -- **************************************************************************
@@ -370,7 +378,7 @@ function dxGetPosition(element)
 end
 
 function dxSetCentered(element, ...)
-	return dx_callmethod(element, "setCentered")
+	return dx_callmethod(element, "setCentered", ...)
 end
 
 -- **************************************************************************

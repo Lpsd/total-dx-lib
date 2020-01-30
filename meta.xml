@@ -51,6 +51,8 @@
 	
 	<export function="dx_iselement" type="client" />
 	<export function="dx_callmethod" type="client" />
+	<export function="dx_createelement" type="client" />
+	
 	<export function="dxCreateWindow" type="client" />
 	<export function="dxCreateButton" type="client" />
 	<export function="dxCreateInput" type="client" />
