@@ -1,6 +1,7 @@
 # Total DX Library
-OOP DX Lib for MTA:SA (WIP)
 
-This is fully Open Source, however uncompleted. I am putting this here now for better project management.
+This is a work-in-progress DX GUI Library for MTA:SA.
 
-I am not currently accepting any PR's until there is an official release (at which time this readme will be changed and there will be a full wiki)
+The library aims to replicate all of the features offered by CEGUI, but with much more customization and properties to mess around with, to give your server a unique feel.
+
+Please note: it is not advised to use this library at the current stage, as it is still under development. Please give me a star above, or "watch" the repo, to keep notified of all future updates and releases.
