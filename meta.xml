@@ -32,10 +32,12 @@
 	<script src="classes/checkbox.lua" type="client" />
 	<script src="classes/radiobutton.lua" type="client" />
 	<script src="classes/slider.lua" type="client" />
+	<script src="classes/colorpicker.lua" type="client" />
 	
 	<!-- Assets -->
 	<file src="assets/images/64x64.png" />
 	<file src="assets/images/boris.jpg" />
+	<file src="assets/images/mask.png" />
 	
 	<file src="assets/shaders/mask.fx" />
 

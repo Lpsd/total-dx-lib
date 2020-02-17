@@ -31,7 +31,7 @@ technique Technique1
 { 
     pass Pass1 
     { 
-        AlphaBlendEnable = true; 
+        AlphaBlendEnable = true;
         SrcBlend = SrcAlpha; 
         DestBlend = InvSrcAlpha; 
         PixelShader = compile ps_2_0 MaskTextureMain(); 

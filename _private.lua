@@ -363,11 +363,13 @@ function PrivateMethods:generateCanvas()
 	end	
 	
 	dxSetRenderTarget(self:getCanvas(), true)
+	-- dxSetBlendMode("add")
 	
 	local children = self:getChildren()
 	
 	callPrivateMethod(self, "draw_internal", children)
-
+	
+	-- dxSetBlendMode()
 	dxSetRenderTarget()
 end
 
@@ -386,10 +388,8 @@ function PrivateMethods:draw_internal(children)
 			else
 				child:dx(x, y)
 			end
-			
-			if(#children > 0) then
-				callPrivateMethod(self, "draw_internal", child:getChildren())
-			end			
+
+			callPrivateMethod(self, "draw_internal", child:getChildren())		
 		end
 	end
 end

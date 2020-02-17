@@ -200,36 +200,15 @@ end
 
 function DxElement:getTexture()
 	if(not self.cachedTexture) then
-		self.cachedTexture = dxCreateRenderTarget(self.width, self.height)
+		self.cachedTexture = dxCreateRenderTarget(self.width, self.height, true)
 	end
 	
 	dxSetRenderTarget(self.cachedTexture, true)
-	dxSetBlendMode("add")
 	
-	if(self:isMaskEnabled()) then
-		self:drawMask(0, 0)
-	else
-		self:dx(0, 0)
-	end
+	self:dx(0, 0)
 	
-	local children = self:getInheritedChildren()
+	callPrivateMethod(self, "draw_internal", self:getChildren(), true)
 	
-	for i=#children,1,-1 do
-		local child = children[i]
-		local x, y = child.baseX, child.baseY
-		
-		if(child.parent ~= self) then
-			x, y = child:getInheritedBasePosition()
-		end
-		
-		if(child:isMaskEnabled()) then
-			child:drawMask(x, y)
-		else
-			child:dx(x, y)
-		end
-	end
-	
-	dxSetBlendMode()
 	dxSetRenderTarget()
 	
 	return self.cachedTexture
@@ -241,25 +220,27 @@ function DxElement:getMaskTexture()
 		self.cachedMaskTexture = dxCreateRenderTarget(self.width, self.height, true)
 	end
 	
+	if(not self.mask.backgroundTexture) then
+		self.mask.backgroundTexture = dxCreateTexture(self.width, self.height)
+		local pixels = dxGetTexturePixels(self.mask.backgroundTexture)
+		
+		for y=0,self.height-1 do
+			for x=0, self.width-1 do
+				dxSetPixelColor(pixels, x, y, 255, 255, 255, 255)
+			end
+		end
+		
+		dxSetTexturePixels(self.mask.backgroundTexture, pixels)
+	end
+	
 	dxSetRenderTarget(self.cachedMaskTexture, true)
-	dxSetBlendMode("add")
+	
+	dxDrawImage(0, 0, self.width, self.height, self.mask.backgroundTexture)
 	
 	self:dx(0, 0)
 	
-	local children = self:getInheritedChildren()
+	callPrivateMethod(self, "draw_internal", self:getChildren(), true)
 	
-	for i=#children,1,-1 do
-		local child = children[i]
-		local x, y = child.baseX, child.baseY
-		
-		if(child.parent ~= self) then
-			x, y = child:getInheritedBasePosition()
-		end
-		
-		child:dx(x, y)
-	end
-	
-	dxSetBlendMode()
 	dxSetRenderTarget()
 	
 	return self.cachedMaskTexture
@@ -278,7 +259,7 @@ function DxElement:applyMask(mask)
 		self.mask.texture = dxCreateTexture(self.mask.texture, "argb", true, "clamp")
 	end
 	
-	dxSetShaderValue(self.mask.shader, "ScreenTexture", self:getMaskTexture())
+	dxSetShaderValue(self.mask.shader, "ScreenTexture", self:getTexture())
 	dxSetShaderValue(self.mask.shader, "MaskTexture", self.mask.texture)
 	
 	self.mask.state = true
@@ -385,6 +366,18 @@ end
 function DxElement:setDragArea(x, y, width, height)
 	self.dragArea.x, self.dragArea.y = x and x or self.dragArea.x, y and y or self.dragArea.y
 	self.dragArea.width, self.dragArea.height = width and width or self.dragArea.width, height and height or self.dragArea.height
+end
+
+function DxElement:setDraggingEnabled(x, y)
+	if(x ~= nil) then
+		self:setProperty("allow_drag_x", x and true or false)
+	end
+	
+	if(y ~= nil) then
+		self:setProperty("allow_drag_y", y and true or false)
+	end
+	
+	return true
 end
 
 -- **************************************************************************

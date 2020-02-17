@@ -43,6 +43,10 @@ RESOURCE_NAME = false
 local function init()
 	RESOURCE_NAME = getResourceName(getThisResource())
 	
+	-- Load all styles
+	getAllStyles()
+	
+	-- Initialize exporter
 	dxInitializeExporter()
 end
 addEventHandler("onClientResourceStart", resourceRoot, init)

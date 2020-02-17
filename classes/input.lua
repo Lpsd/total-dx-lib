@@ -51,10 +51,13 @@ function DxInput:constructor(x, y, width, height, text)
 	
 	self.textColor = getStyleSetting("input", "text_color")
 	
-	self.setGUIElementFocused = function()
-		guiSetInputMode("no_binds")
-		self.focused = guiFocus(self.guiElement)
-		self.focused = true
+	self.setGUIElementFocused = function(button, state)
+		if(button == "left" and state == "down") then
+			iprint(getTickCount())
+			guiSetInputMode("no_binds")
+			self.focused = guiFocus(self.guiElement)
+			self.focused = true
+		end
 	end
 	
 	self:addClickFunction(self.setGUIElementFocused)
@@ -140,9 +143,9 @@ function DxInput:onClientClick(button, state, x, y)
 	else
 		if(self.selection.dragging) then		
 			if(self.selection.index.finish > self.selection.index.start) then
-				self:setCaretIndex(self.selection.index.start)
+				guiSetProperty(self.guiElement, "CaratIndex", self.selection.index.start)
 			else
-				self:setCaretIndex(self.selection.index.finish)
+				guiSetProperty(self.guiElement, "CaratIndex", self.selection.index.finish)
 			end
 			
 			guiSetProperty(self.guiElement, "SelectionLength", self.selection.length)
@@ -188,20 +191,6 @@ end
 
 function DxInput:processTextSelection()
 	if(self.selection.dragging) then
-		-- if(not self:isMouseOverElement()) then
-			if(self.selection.index.finish > self.selection.index.start) then
-				-- self:setCaretIndex(self.selection.index.start)
-			else
-				-- self:setCaretIndex(self.selection.index.finish)
-			end
-			
-			-- guiSetProperty(self.guiElement, "SelectionLength", self.selection.length)
-			
-			-- return
-		-- end
-		
-		
-		
 		local sx, sy = guiGetScreenSize()
 		local cx, cy = getCursorPosition()
 		
@@ -214,7 +203,13 @@ function DxInput:processTextSelection()
 		local selectionX, selectionWidth = self:getTextSelectionBounds()
 		
 		self.selection.bounds.x = selectionX
-		self.selection.bounds.width = selectionWidth		
+		self.selection.bounds.width = selectionWidth
+
+		if(self.selection.index.finish > self.selection.index.start) then
+			guiSetProperty(self.guiElement, "CaratIndex", self.selection.index.start)
+		else
+			guiSetProperty(self.guiElement, "CaratIndex", self.selection.index.finish)
+		end
 	end
 end
 
