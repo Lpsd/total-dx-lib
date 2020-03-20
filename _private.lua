@@ -394,6 +394,25 @@ function PrivateMethods:draw_internal(children)
 	end
 end
 
+-- *************************************************
+
+function PrivateMethods:updateShaderTexture()
+	if(not self.shader) then
+		return false
+	end
+	
+	if(self:isSizeUpdated()) then
+		if(self.shaderTexture) then
+			destroyElement(self.shaderTexture)
+		end
+		
+		self.shaderTexture = dxCreateRenderTarget(self.width, self.height, true)
+	end
+	
+	dxSetRenderTarget(self.shaderTexture)
+	dxDrawImage(0, 0, self.width, self.height, self.shader, 0, 0, 0, tocolor(255, 255, 255, 255))
+	dxSetRenderTarget()
+end
 
 -- *************************************************
 

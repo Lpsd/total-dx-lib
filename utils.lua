@@ -133,3 +133,17 @@ function deepcopy(orig, copies)
     end
     return copy
 end
+
+function getColorAtCursorPosition()
+	local cursorX, cursorY = getCursorPosition()
+	cursorX, cursorY = ( cursorX * SCREEN_WIDTH ), ( cursorY * SCREEN_HEIGHT )
+	
+	local screen = dxCreateScreenSource(SCREEN_WIDTH, SCREEN_HEIGHT)
+	dxUpdateScreenSource(screen, true)
+	
+	local pixels = dxGetTexturePixels(screen)
+	
+	local r, g, b, a = dxGetPixelColor(pixels, cursorX, cursorY)
+	
+	return r, g, b, a
+end

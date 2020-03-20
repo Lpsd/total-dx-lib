@@ -19,6 +19,7 @@
 	<script src="_exporter.lua" type="client" />
 	<script src="_private.lua" type="client" />
 	<script src="functions.lua" type="client" />
+	<script src="events.lua" type="client" />
 	
 	<!-- Element Classes -->
 	<script src="classes/element.lua" type="client" />	

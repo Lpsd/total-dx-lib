@@ -67,6 +67,7 @@ function DxColorPicker:constructor(x, y, width, height)
 	]]
 	
 	self.shader = dxCreateShader(self.shaderText)
+	self.shaderTexture = dxCreateRenderTarget(self.width, self.height, true)
 	
 	self.radius = (self.width >= self.height and self.width or self.height)
 	
@@ -85,6 +86,11 @@ function DxColorPicker:constructor(x, y, width, height)
 	self.picker.element:setParent(self)
 	
 	self:addRenderFunction(self.updateShaderValues)
+	
+	self.fGetClickedColor = bind(self.getClickedColor, self)
+	self:addClickFunction(self.fGetClickedColor)
+	
+	self.clickedColor = false
 end
 
 -- **************************************************************************
@@ -92,8 +98,8 @@ end
 function DxColorPicker:dx(x, y)
 	x, y = x or self.x, y or self.y
 	
-	if(self.shader) then
-		dxDrawImage(x, y, self.width, self.height, self.shader, 0, 0, 0, tocolor(self.color.r, self.color.g, self.color.b, self.color.a))
+	if(self.shaderTexture) then
+		dxDrawImage(x, y, self.width, self.height, self.shaderTexture, 0, 0, 0, tocolor(255, 255, 255, self.color.a))
 	end
 end
 
@@ -101,6 +107,21 @@ end
 
 function DxColorPicker:updateShaderValues()
 	dxSetShaderValue(self.shader, "globalRadius", self.radius)
+end
+
+-- **************************************************************************
+
+function DxColorPicker:getClickedColor(button, state)
+	if(button == "left" and state == "down") then
+		local r, g, b, a = getColorAtCursorPosition()
+		
+		self.clickedColor = {
+			r = r,
+			g = g,
+			b = b,
+			a = a
+		}
+	end
 end
 
 -- **************************************************************************

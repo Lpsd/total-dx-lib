@@ -18,3 +18,7 @@ local function init()
 	colorpicker:setCentered(true)
 end
 addEventHandler("onClientResourceStart", resourceRoot, init)
+
+bindKey("F2", "down", function()
+	showCursor(not isCursorShowing())
+end)

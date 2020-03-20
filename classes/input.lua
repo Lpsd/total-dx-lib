@@ -53,7 +53,6 @@ function DxInput:constructor(x, y, width, height, text)
 	
 	self.setGUIElementFocused = function(button, state)
 		if(button == "left" and state == "down") then
-			iprint(getTickCount())
 			guiSetInputMode("no_binds")
 			self.focused = guiFocus(self.guiElement)
 			self.focused = true

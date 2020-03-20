@@ -148,6 +148,8 @@ function DxElement:virtual_constructor(x, y, width, height)
 	
 	self:addRenderFunction(getPrivateMethod(self, "updatePreviousDimensions"))
 	
+	self:addRenderFunction(getPrivateMethod(self, "updateShaderTexture"))
+	
 	addEventHandler("onClientRender", root, getPrivateMethod(self, "render"))
 	addEventHandler("onClientPreRender", root, getPrivateMethod(self, "prerender"))		
 	
